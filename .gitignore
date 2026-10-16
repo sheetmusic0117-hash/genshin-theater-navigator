@@ -1,0 +1,9 @@
+# 本機用、不公開
+saves/
+archive/
+.claude/
+index - 複製.html
+SPEC-實戰模式.md
+
+# tools/update_characters.py 產生的中間檔
+data/yatta-*.json

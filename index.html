@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>幻想真境劇詩規劃器</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#222;--mut:#777;--line:#ddd7c8;--acc:#7a5af8;--warn:#c0392b;--ok:#2e8b57;
+--pyro:#e5533d;--hydro:#2f7fd1;--electro:#a05bd8;--cryo:#4fb7d6;--anemo:#27a98a;--geo:#c99a2e;--dendro:#6aa83a}
+@media(prefers-color-scheme:dark){:root{--bg:#17161b;--card:#222128;--ink:#eee;--mut:#9a98a5;--line:#383540}}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 system-ui,"Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+header h1{font-size:16px;margin:0 12px 0 0}
+button,select,input,textarea{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+button{cursor:pointer}button.on,button.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+button.sm{padding:1px 6px;font-size:12px}
+main{padding:16px;max-width:1200px;margin:auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:1px 8px 1px 1px;border-radius:14px;border:1px solid var(--line);font-size:13px;margin:2px;vertical-align:middle}
+.chip img,.chip .noimg{width:24px;height:24px;border-radius:50%;object-fit:cover}
+.chip.bad{border-color:var(--warn);color:var(--warn)}
+.chip x{cursor:pointer;color:var(--mut)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.noimg{display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px}
+.mut{color:var(--mut)}.warn{color:var(--warn)}.ok{color:var(--ok)}
+.boss{border-left:4px solid var(--warn)}.arc{border-left:4px solid var(--acc)}
+h3{margin:0 0 6px;font-size:15px}h4{margin:8px 0 2px;font-size:13px;color:var(--mut)}
+table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid var(--line);padding:3px 6px;text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+textarea{width:100%;min-height:160px;font-family:monospace;font-size:12px}
+.hide{display:none}
+/* 元素分組頭像格 */
+.elgrp{margin:6px 0 10px}.elgrp>.eh{font-weight:600;display:flex;gap:6px;align-items:center;margin-bottom:4px}
+.avs{display:flex;flex-wrap:wrap;gap:6px}
+.av{width:78px;text-align:center;font-size:12px;cursor:pointer;border:2px solid transparent;border-radius:10px;padding:3px;position:relative;background:var(--card)}
+.av img,.av .noimg{width:60px;height:60px;border-radius:10px;object-fit:cover;display:block;margin:auto}
+.av.r5 img{background:linear-gradient(#b0753a,#e3a65a)}.av.r4 img{background:linear-gradient(#6d5a9e,#a787d6)}
+.av.sel{border-color:var(--acc)}.av.dim{opacity:.35}
+.av .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av .bdg{position:absolute;top:2px;right:2px;background:var(--acc);color:#fff;border-radius:8px;font-size:10px;padding:0 4px}
+.pc{width:96px;cursor:default}.pc .lc{display:grid;grid-template-columns:auto 1fr;gap:2px 4px;align-items:center;margin-top:2px;text-align:left}
+.pc .lc input{width:100%;min-width:0;padding:0 3px;font-size:11px}.pc .lc input:disabled{opacity:.6}
+.pc .ck{position:absolute;top:4px;left:4px}
+#modal{position:fixed;inset:0;background:#0007;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px}
+#modal.hide{display:none}
+.av .tg{font-size:10px;color:var(--acc)}
+.av .bdg.s2{background:var(--ok)}.av .bdg.s1{background:#d68910}.av .bdg.s0{background:#888}
+small.s2{color:var(--ok)}small.s1{color:#d68910}small.s0{color:var(--mut)}
+.pc{cursor:pointer}.pc.lk{cursor:not-allowed}.pc .px{position:absolute;top:2px;right:6px;cursor:pointer;color:var(--mut)}
+.avs.mini .av{width:60px;font-size:11px;padding:2px}.avs.mini .av img,.avs.mini .av .noimg{width:44px;height:44px}
+details.stp{margin-top:8px;border-top:1px dashed var(--line);padding-top:4px}details.stp summary{cursor:pointer;color:var(--mut);font-size:13px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.slot.cond{flex-direction:column;gap:2px;border-style:dashed;border-color:var(--acc);color:var(--ink);font-size:12px;background:rgba(122,90,248,.08)}
+.slot.cond .ci{font-size:20px;display:flex}.slot.cond .ci .dot{width:16px;height:16px}.slot.cond .ct{font-size:12px}
+.condrow{margin:6px 0;gap:4px}
+.cw{display:contents}
+.jump{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}.chip.jump:hover,.jump:hover{color:var(--acc)}
+@keyframes flashbg{0%,60%{box-shadow:0 0 0 3px var(--acc)}100%{box-shadow:0 0 0 0 transparent}}.flash{animation:flashbg 1.6s ease-out;border-radius:10px}
+.slot .ctag{position:absolute;left:0;right:0;bottom:0;background:rgba(122,90,248,.85);color:#fff;font-size:11px;text-align:center;padding:1px 0;z-index:1}
+.ctag2{display:inline-block;font-size:11px;padding:0 6px;border-radius:8px;background:rgba(122,90,248,.2);color:var(--acc);margin-left:4px}
+.genline{font-size:12px;margin-top:2px}
+.condimg{width:60px;height:60px;border-radius:10px;border:2px dashed var(--acc);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--acc);background:rgba(122,90,248,.08)}
+.condimg .dot{width:22px;height:22px}.avs.four .condimg{width:100%;height:auto;aspect-ratio:1}
+.cbadge{position:absolute;top:3px;right:3px;background:var(--acc);color:#fff;border-radius:8px;font-size:11px;padding:0 4px;font-weight:700}.cbadge:empty{display:none}
+.rrrow{margin-top:6px;font-size:13px}
+.sq.evt .evv{font-size:11px;color:var(--ink);margin-top:3px;line-height:1.3}.sq.evt.best{border:2px solid var(--ok)}
+.resrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.res{border:1px solid var(--line);border-radius:10px;padding:6px 10px;min-width:96px;background:rgba(122,90,248,.06)}
+.res .rl{font-size:12px;color:var(--mut)}.res .rv{font-size:18px;font-weight:700;line-height:1.3}.res .rs{font-size:11px;color:var(--mut)}
+.card.warn{border-color:var(--warn)}
+table.goals td,table.goals th{font-size:13px}table.goals tr.top td{background:rgba(46,139,87,.12);font-weight:600}
+/* 實戰頁：方格一行 6 格、字跟著放大；狀態頭像用和規劃頁相同的絕對大小 */
+#tab-live .sqgrid{grid-template-columns:repeat(6,1fr)}
+#tab-live .sq{font-size:18px;padding:8px 6px;gap:4px}
+#tab-live .sq .sqi{font-size:34px;min-height:38px}#tab-live .sq .sqi .dot{width:24px;height:24px}
+#tab-live .sq .sqt{font-weight:600;line-height:1.25}#tab-live .sq .sqs{font-size:14px}
+#tab-live .sq.evt .evv{font-size:16px;margin-top:4px;line-height:1.35}
+#tab-live .avs.four,.fixedav .avs.four{display:flex;flex-wrap:wrap;gap:6px}#tab-live .avs.four .av,.fixedav .avs.four .av{width:84px}
+#tab-live .avs.four .avimg,.fixedav .avs.four .avimg{width:74px}#tab-live .avs.four .av img,#tab-live .avs.four .av .noimg,.fixedav .avs.four .av img,.fixedav .avs.four .av .noimg{width:74px;height:74px}
+@media(max-width:820px){#tab-live .sqgrid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:820px){#tab-live .sq{font-size:15px}#tab-live .sq.evt .evv{font-size:13px}}
+@media(max-width:560px){#tab-live .sqgrid{grid-template-columns:repeat(3,1fr)}#tab-live .sq{font-size:13px}#tab-live .sq.evt .evv,#tab-live .sq .sqs{font-size:11px}}
+.sq.picked{border:2px solid var(--acc);background:rgba(122,90,248,.15)}
+.urg{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap}
+.urg.u0{background:var(--warn)}.urg.u1{background:#e67e22}.urg.u2{background:#c9a227}.urg.u3{background:var(--ok)}
+table.todo td{vertical-align:top;font-size:13px;padding:6px}table.todo tr.grp td{background:rgba(122,90,248,.14);font-weight:700}
+.possib .pc2{display:inline-flex;align-items:center;gap:2px;margin:1px 6px 1px 0}.possib .pc2 img,.possib .pc2 .noimg{width:20px;height:20px;border-radius:4px}
+.possib{margin-top:8px;font-size:13px;display:flex;flex-direction:column;gap:4px}.possib .chip img,.possib .chip .noimg{width:22px;height:22px}
+.vimg{background:rgba(122,90,248,.25)!important;color:var(--acc);font-size:16px}.vimg .dot{width:14px;height:14px}
+.needrow{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;margin-top:8px;font-size:13px}.needrow select{padding:1px 4px}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.opt{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:6px}
+.opt .slot{width:56px;height:56px;aspect-ratio:auto}
+.tag{font-size:11px;padding:1px 6px;border-radius:8px;border:1px solid currentColor}
+.t-must{color:#e67e22}.t-rec{color:var(--ok)}.t-bad{color:var(--warn)}.t-need{color:var(--acc)}.t-fill{color:#3a9ad9}.t-none{color:var(--mut)}
+.opt.t-rec{border-color:var(--ok)}.opt.t-must{border-color:#e67e22}.opt.t-bad{border-color:var(--warn)}
+.pc .unx{display:none;position:absolute;top:2px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--warn);color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center;z-index:2}.pc.unown .unx{display:block}
+.pc .lowx{display:none;position:absolute;top:2px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--warn);color:#fff;font-size:15px;font-weight:700;line-height:17px;text-align:center;z-index:2}.pc.low .lowx{display:block}
+.pc.low.sel{border-color:var(--warn)}
+.pc:not(.sel) .lc{display:none}
+.nameidx{font-size:12px;line-height:1.8;max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-top:4px}
+pre.code{background:#0003;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px;overflow:auto;max-height:240px}
+header button.lockd{opacity:.45}
+.linkw a{color:#fff}@media(prefers-color-scheme:light){.linkw a{color:var(--acc)}}
+.elbtn{display:inline-flex;align-items:center;gap:4px}.elbtn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+details.card>summary{cursor:pointer}
+label.upl{width:44px;height:44px;border:2px dashed var(--line);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:var(--mut);cursor:pointer;overflow:hidden}
+label.upl img{width:100%;height:100%;object-fit:cover}
+.cons{position:absolute;left:3px;bottom:3px;min-width:15px;height:15px;padding:0 3px;border-radius:4px;background:rgba(0,0,0,.7);color:rgba(255,255,255,.85);font-weight:700;font-size:10px;line-height:15px;text-align:center;z-index:1}
+.slot .cons{left:5px;bottom:5px;min-width:19px;height:19px;font-size:12px;line-height:19px}
+.slot.sm .cons{min-width:14px;height:14px;font-size:10px;line-height:12px;left:1px;bottom:1px}
+.av.bad{border-color:var(--warn)}.av.bad.dim{opacity:1;filter:none}.av.bad::after{content:'!';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--warn);color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;z-index:2}
+.slot.bad{border:2px solid var(--warn)}.slot .inv{position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:var(--warn);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;z-index:1}
+.slot.r5 img{background:linear-gradient(#b0753a,#e3a65a)}.slot.r4 img{background:linear-gradient(#6d5a9e,#a787d6)}
+.stn{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:#fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.35);z-index:1}
+.slot .stn{top:4px;right:4px;width:20px;height:20px;font-size:12px}
+.stn.s2{background:#2e9e5b}.stn.s1{background:#d68910}.stn.s0{background:#777}
+.slot.sm .stn{width:16px;height:16px;font-size:10px;top:1px;right:1px}
+label.cheer{display:inline-flex;gap:6px;align-items:center;margin:6px 0;padding:4px 10px;border:1px solid var(--ok);border-radius:8px;cursor:pointer}
+.avimg{position:relative;width:60px;margin:auto}
+.avs.four .avimg{width:100%}
+.sec{border:1px solid var(--line);border-radius:10px;margin-top:10px;overflow:hidden}
+.sec>.sh{background:rgba(122,90,248,.14);padding:5px 10px;font-weight:600;font-size:13px;border-bottom:1px solid var(--line)}
+.sec>.sb{padding:8px 10px}
+.sqgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.sq{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;padding:4px;background:var(--card);font-size:12px;line-height:1.3}
+.sq:hover{border-color:var(--acc)}.sq.dis{opacity:.35;cursor:not-allowed}
+.sq .sqi{font-size:20px;display:flex;gap:3px;align-items:center;min-height:22px}.sq .sqi .dot{width:12px;height:12px}
+.sq .sqs{color:var(--mut);font-size:11px}
+#mbox .sqgrid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}#mbox .sq{font-size:13px}
+.evrow{min-height:44px;border-bottom:1px dashed var(--line)}.evrow .evl[data-ee]{cursor:pointer}
+.evrow x{font-size:20px;width:32px;height:32px;line-height:30px;text-align:center;border-radius:50%;flex:none}.evrow x:hover{background:#8883;color:var(--warn)}
+.evrow .mini img,.evrow .mini .noimg{width:28px;height:28px;border-radius:6px;vertical-align:middle;object-fit:cover}
+.sides{display:inline-flex;gap:2px}.sides button.on{background:var(--acc);color:#fff}
+.card.done{box-shadow:0 0 0 2px var(--ok) inset}
+.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.slot{aspect-ratio:1;border:2px dashed var(--line);border-radius:12px;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--mut);overflow:hidden}
+.slot:not(.empty){border-style:solid}
+.slot img,.slot .noimg{width:100%;height:100%;object-fit:cover;background:#8883}
+.slot.out img{filter:grayscale(1) brightness(.45)}.slot.bad{border-color:var(--warn)}.slot.dis{opacity:.35;cursor:not-allowed}
+.slot.sm{width:40px;height:40px;aspect-ratio:auto;font-size:14px;border-radius:8px;flex:none}
+.avs.four{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.avs.four .av{width:auto}.avs.four .av img,.avs.four .av .noimg{width:100%;height:auto;aspect-ratio:1}
+.ledger{max-width:none}.evrow{display:flex;align-items:center;gap:6px;justify-content:space-between;padding:2px 0}
+.evrow .evl{flex:1;min-width:0;line-height:1.6;overflow-wrap:anywhere}.evrow b{white-space:nowrap}.evrow x{cursor:pointer;color:var(--mut)}
+.evrow.sum{border-top:1px solid var(--ink);font-weight:600}.evadd{margin:2px 0}
+details.blv{margin:4px 0}details.blv summary{cursor:pointer}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#333;color:#fff;padding:8px 16px;border-radius:8px;z-index:30;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw}
+#toast.show{opacity:1}
+.av.out img,.tile.out img{filter:grayscale(1) brightness(.5)}.av.out,.tile.out{opacity:.55}
+.av.dis{opacity:.3;filter:grayscale(.8);cursor:not-allowed}
+.tiles{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start}
+.tile{position:relative;display:inline-flex;flex-direction:column;align-items:center}
+.tile img,.tile .noimg{width:48px;height:48px;border-radius:10px;object-fit:cover;background:#8883}
+.tile.bad img{outline:2px solid var(--warn)}
+.tile x{position:absolute;top:-6px;right:-6px;background:var(--card);border:1px solid var(--line);border-radius:50%;width:16px;height:16px;font-size:11px;line-height:14px;text-align:center;cursor:pointer;color:var(--mut)}
+.addt{height:48px;width:48px;font-size:18px}
+.ledger{font-variant-numeric:tabular-nums;margin:4px 0;font-size:13px}
+.ledger>div{display:flex;justify-content:space-between}.ledger .sum{border-top:1px solid var(--ink);margin-top:2px;padding-top:2px;font-weight:600}
+.bpick{font-size:13px;gap:6px}
+#modal .box{background:var(--bg);border-radius:12px;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:14px}
+</style>
+</head>
+<body>
+<header>
+  <h1>幻想真境劇詩規劃器</h1>
+  <button data-tab="season" class="on">① 當期資料</button>
+  <button data-tab="pool">② 角色池</button>
+  <button data-tab="plan">③ 規劃</button>
+  <button data-tab="todo">④ 待辦清單</button>
+  <span style="flex:1"></span>
+  <button id="wsbtn">工作區</button>
+  <select id="lang" class="notr" title="Language"><option value="tw">繁中</option><option value="cn">简中</option><option value="en">English</option><option value="ja">日本語</option></select>
+  <button id="exp">匯出全部</button>
+  <button id="imp">匯入全部</button>
+  <input type="file" id="impf" accept=".json" class="hide">
+</header>
+<main>
+<section id="tab-season"></section>
+<section id="tab-pool" class="hide"></section>
+<section id="tab-plan" class="hide"></section>
+<section id="tab-todo" class="hide"></section>
+</main>
+<div id="toast"></div>
+<div id="modal" class="hide"><div class="box" id="mbox"></div></div>
+
+<!-- 角色資料與頭像：由 yatta.moe API 下載到本機（data/characters.js、assets/avatars/） -->
+<script src="data/characters.js"></script>
+<script src="data/names.js"></script>
+<script src="data/i18n.js"></script>
+<script>
+/* ============ 語言切換 ============ */
+// 程式內文字都以繁中撰寫；顯示時把畫面上的文字依對照表換成目標語言（角色名用官方譯名）
+let LANG=(()=>{try{return localStorage.getItem('theatar-lang')||'tw'}catch(e){return'tw'}})(),TR=null;
+const NAME_KEY={cn:'chs',en:'en',ja:'jp'};
+function buildTR(){if(LANG==='tw'||!window.I18N){TR=null;return}
+ const dict={...(I18N[LANG]||{})};const nk=NAME_KEY[LANG];
+ Object.entries(window.CHAR_NAMES||{}).forEach(([tw,v])=>{if(v?.[nk])dict[tw]=v[nk]});
+ // 單一個中文字（如「中」「高」「名」）只在整段文字完全相同時才翻，避免把其他詞切壞；元素字與標點例外
+ const single=k=>[...k].length===1&&/[㐀-鿿]/.test(k)&&!(I18N.elem||[]).includes(k);
+ const keys=Object.keys(dict).filter(k=>!single(k)).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+ TR={dict,re:new RegExp(keys.join('|'),'g'),char:LANG==='cn'?I18N.cnChar:null}}
+function tr(s){if(!TR||!s||!/[　-鿿＀-￯]/.test(s))return s;
+ const tt=s.trim();if(TR.dict[tt]!=null&&TR.char==null)return s.replace(tt,TR.dict[tt]);
+ const en=LANG==='en',lead=s.match(/^\s*/)[0],trail=s.match(/\s*$/)[0];
+ // 英文：先處理含數字的幕名，再逐詞替換（前後補空白），最後整理空白與量詞
+ if(en)s=s.replace(/第\s*10\s*幕打完即結束，不給花/g,' Act 10 ends the run; no flowers ').replace(/第\s*(\d+)\s*幕\s*之前/g,' By Act $1 ').replace(/圣牌挑戰\s*(I+)\s*之前/g,' By Arcana $1 ').replace(/第\s*(\d+)\s*幕/g,' Act $1 ');
+ let r=s.replace(TR.re,m=>en?' '+TR.dict[m]+' ':TR.dict[m]);
+ if(en){r=r.replace(/(\d+)\s*選\s*1/g,'pick 1 of $1').replace(/(\d+)\s*[名人]/g,'$1').replace(/(\d+)\s*格/g,'$1 slot(s)')
+   .replace(/→\s*限/g,'→ only ').replace(/\s*系/g,'').replace(/\s*群/g,' pack').replace(/\s*之前/g,' (before)')
+   .replace(/[ \t]{2,}/g,' ').replace(/ ([,.:;)!?%])/g,'$1').replace(/([(\[]) /g,'$1').replace(/" ([^"]*?) "/g,'"$1"').replace(/(\d) -/g,'$1-').replace(/ ?・ ?/g,' · ');r=lead+r.trim()+trail}
+ if(TR.char)r=r.replace(/[㐀-鿿]/g,c=>TR.char[c]||c);
+ return r}
+const SKIP_TAGS={SCRIPT:1,STYLE:1,TEXTAREA:1};
+function trText(n){const p=n.parentNode;if(!p||SKIP_TAGS[p.nodeName]||p.closest?.('.notr'))return;
+ if(n.__t===undefined||n.nodeValue!==n.__t)n.__o=n.nodeValue;const t=tr(n.__o);n.__t=t;if(n.nodeValue!==t)n.nodeValue=t}
+function trAttrs(el){if(el.closest?.('.notr'))return;el.__oa??={};el.__ta??={};
+ ['title','placeholder'].forEach(a=>{const v=el.getAttribute(a);if(v==null)return;if(el.__ta[a]===undefined||v!==el.__ta[a])el.__oa[a]=v;const t=tr(el.__oa[a]);el.__ta[a]=t;if(v!==t)el.setAttribute(a,t)})}
+function trTree(root){if(!root)return;if(root.nodeType===3)return trText(root);if(root.nodeType!==1)return;
+ trAttrs(root);root.querySelectorAll('[title],[placeholder]').forEach(trAttrs);
+ const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode())trText(n)}
+const trObs=new MutationObserver(ms=>{for(const m of ms){if(m.type==='childList')m.addedNodes.forEach(trTree);
+ else if(m.type==='characterData')trText(m.target);else if(m.type==='attributes')trAttrs(m.target)}});
+function setLang(l){LANG=l;try{localStorage.setItem('theatar-lang',l)}catch(e){}buildTR();
+ document.documentElement.lang={tw:'zh-Hant',cn:'zh-Hans',en:'en',ja:'ja'}[l];
+ paintWs();trTree(document.body)}
+// 對話框也翻譯
+{const A=window.alert.bind(window),C=window.confirm.bind(window),P=window.prompt.bind(window);
+ window.alert=m=>A(tr(String(m)));window.confirm=m=>C(tr(String(m)));window.prompt=(m,d)=>P(tr(String(m)),d)}
+buildTR();
+trObs.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['title','placeholder']});
+
+/* ============ 常數與內建資料 ============ */
+const EL={pyro:'火',hydro:'水',electro:'雷',cryo:'冰',anemo:'風',geo:'岩',dendro:'草'};
+// 參演人數依模式而定：月諭 28~32（10 幕＋2 場圣牌挑戰）、卓越 22~26（10 幕，沒有圣牌挑戰）
+let ROSTER_MIN=28,ROSTER_MAX=32;const STAMINA=2,MAX_BLESS=4;
+const MODES={luna:{label:'月諭',min:28,max:32,arc:true},visionary:{label:'卓越',min:22,max:26,arc:false}};
+const modeOf=()=>MODES[S?.mode]||MODES.luna;
+function applyMode(){const m=modeOf();ROSTER_MIN=m.min;ROSTER_MAX=m.max}
+const ACTS=[...[1,2,3,4,5,6,7,8,9].map(n=>({k:'a'+n,label:'第'+n+'幕',boss:[3,6,8].includes(n)})),
+  {k:'c1',label:'圣牌挑戰 I',arc:true},{k:'c2',label:'圣牌挑戰 II',arc:true},{k:'a10',label:'第10幕',boss:true}];
+const ACT=Object.fromEntries(ACTS.map(a=>[a.k,a]));
+// 角色庫：來自 data/characters.js；檔案缺失時為空，仍可手動新增
+const DB={};(window.CHAR_DATA||[]).forEach(c=>DB[c.name]=c);
+const BY_ID={};(window.CHAR_DATA||[]).forEach(c=>BY_ID[c.id]=c);
+const DEFAULT_BLESS=['蒸發','融化','超導','感電','凍結','擴散','結晶','綻放','火晶','星輝'];
+// 幻劇之花預設參數（來自 4.7~5.0 攻略的近似值，請依遊戲內實際數字修改）
+const DEFAULT_FLOWER={base:160,perExtra:30,battle:90,elite:110,boss:125,arc:90,invite:80,grand:100,bless:60};
+const SAMPLE_SEASON={
+  name:'Season 28 (2026-10-01 ~ 11-01) 草稿，請自行核對',elements:['hydro','cryo','anemo'],
+  opening:['那維萊特','茜特菈莉','芭芭拉','凱亞','流浪者','布倫妮'],guests:['伊涅芙','八重神子','托馬','千織'],
+  acts:{a3:{name:'Perpetual Mechanical Array'},a4:{variants:{a:'Monolith Defense（愚人眾）'}},a6:{name:'Furiosa'},a8:{name:'Chimeric Winged Lion'},
+   a9:{variants:{a:'無盡波次：Wildwood Leshies、Avatars of Lava'}},a10:{name:'Secret Source Automaton: Overseer Device'},
+   c1:{name:'Rockfond Rifthound 群'},c2:{name:'Ruin Grader / Ruin Guard / Ruin Drake'}}};
+// 普通幕的敵人 A/B/C：有指定 variants 就用；name 是陣列時依序填入 A、B、C；name 是單一字串時只填 A（字串內的「/」不切開）
+function actVariants(inf){if(inf?.variants)return inf.variants;const v={},n=inf?.name;
+ (Array.isArray(n)?n:n?[n]:[]).slice(0,3).forEach((x,i)=>{if(x)v['abc'[i]]=x});return v}
+const PLAN_VER=6;
+// 舊版內建庫用錯的名稱 → 官方繁中名（null = 不存在的角色，移除）
+const ALIAS={'埃洛伊':'亞蘿伊','羅莎莉亞':'蘿莎莉亞','珐露珊':'琺露珊','莉奈特':'琳妮特','蘭那羅':null};
+
+/* ============ 工作區（多個獨立規劃） ============ */
+// 每個工作區各自存一份資料；分頁用網址 #ws=編號 或本分頁記憶（sessionStorage）決定開哪個工作區，所以不同視窗可同時開不同規劃
+const WS_LIST_KEY='theatar-wslist';
+function wsList(){let l=[];try{l=JSON.parse(localStorage.getItem(WS_LIST_KEY)||'[]')}catch(e){}if(!l.some(w=>w.id==='default'))l.unshift({id:'default',name:'預設'});return l}
+function wsSave(l){try{localStorage.setItem(WS_LIST_KEY,JSON.stringify(l))}catch(e){}}
+const wsKey=id=>id==='default'?'theatar':'theatar@'+id;
+const WS=(()=>{const h=(location.hash.match(/ws=([\w-]+)/)||[])[1];let id=h;try{id=id||sessionStorage.getItem('theatar-ws')}catch(e){}
+ if(!id||!wsList().some(w=>w.id===id))id='default';try{sessionStorage.setItem('theatar-ws',id)}catch(e){}return id})();
+const KEY=wsKey(WS);
+const wsName=()=>wsList().find(w=>w.id===WS)?.name||'預設';
+function wsUrl(id){return location.href.split('#')[0]+'#ws='+id}
+function wsNew(name,copyFrom){const id=Date.now().toString(36);const l=wsList();l.push({id,name});wsSave(l);
+ if(copyFrom!=null){try{const d=localStorage.getItem(wsKey(copyFrom));if(d)localStorage.setItem(wsKey(id),d)}catch(e){toast('瀏覽器空間不足，無法複製')}}return id}
+function wsOpen(id,newWin){if(newWin)return window.open(wsUrl(id),'_blank');try{sessionStorage.setItem('theatar-ws',id)}catch(e){}location.href=wsUrl(id);location.reload()}
+function openWorkspaces(){const l=wsList();
+ $('#mbox').innerHTML=`<div class="row"><h3 style="margin:0">工作區</h3><span style="flex:1"></span><button class="pri" id="wnew">新增空白工作區</button><button id="wcopy">複製目前工作區</button><button id="mcancel">關閉</button></div>
+  <div class="mut" style="margin:6px 0">每個工作區是一份獨立的規劃，可在不同視窗同時開不同工作區。資料存在這個瀏覽器裡。</div>
+  <table class="files"><tr><th>名稱<th></tr>${l.map(w=>`<tr><td>${esc(w.name)}${w.id===WS?' <span class="ok">（目前視窗）</span>':''}<td class="n">
+   ${w.id===WS?'':`<button class="sm" data-wgo="${w.id}">在此視窗開啟</button>`}<button class="sm" data-wwin="${w.id}">新視窗開啟</button>
+   <button class="sm" data-wren="${w.id}">改名</button>${w.id==='default'||w.id===WS?'':`<button class="sm" data-wdel="${w.id}">刪除</button>`}</tr>`).join('')}</table>`;
+ $('#mcancel').onclick=closeModal;$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+ $('#wnew').onclick=()=>askName('新增工作區：名稱',`工作區 ${l.length+1}`,n=>{const id=wsNew(n);wsOpen(id,true);openWorkspaces()},'新增並開新視窗');
+ $('#wcopy').onclick=()=>askName('複製目前工作區：名稱',`${wsName()} 的副本`,n=>{const id=wsNew(n,WS);wsOpen(id,true);openWorkspaces()},'複製並開新視窗');
+ document.querySelectorAll('[data-wgo]').forEach(b=>b.onclick=()=>wsOpen(b.dataset.wgo,false));
+ document.querySelectorAll('[data-wwin]').forEach(b=>b.onclick=()=>wsOpen(b.dataset.wwin,true));
+ document.querySelectorAll('[data-wren]').forEach(b=>b.onclick=()=>{const l2=wsList(),w=l2.find(x=>x.id===b.dataset.wren);askName('工作區改名',w.name,n=>{w.name=n;wsSave(l2);paintWs();openWorkspaces()},'改名')});
+ document.querySelectorAll('[data-wdel]').forEach(b=>b.onclick=()=>{const l2=wsList(),w=l2.find(x=>x.id===b.dataset.wdel);if(!confirm(`刪除工作區「${w.name}」？裡面的規劃會一併刪除。`))return;
+  wsSave(l2.filter(x=>x!==w));try{localStorage.removeItem(wsKey(w.id))}catch(e){}openWorkspaces()});
+ showModal()}
+function paintWs(){const b=$('#wsbtn');if(b)b.textContent=`工作區：${wsName()} ▾`;document.title=tr(`${wsName()==='預設'?'':wsName()+' - '}幻想真境劇詩規劃器`)}
+
+/* ============ 狀態 ============ */
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let S=load();
+// 全域「上一步」歷史（只存在本次開啟期間）；histLabel 讓下一筆紀錄帶上說明
+const hist=[];let lastJSON=JSON.stringify(S),histLabel='';
+function blank(){return{v:PLAN_VER,pool:[],season:{name:'',elements:[],opening:[],guests:[],acts:{}},bless:[...DEFAULT_BLESS],plan:{},
+ support:'',opening:{},seasonLocked:false,locked:false,flower:{...DEFAULT_FLOWER}}}
+function fix(s){const b=blank(),old=s.v;s=Object.assign(b,s);s.flower=Object.assign({...DEFAULT_FLOWER},s.flower);
+ if(s.flower.boss===90)s.flower.boss=125; // 首領幕獎勵更正為 125（舊存檔沿用舊預設 90 的一併更新）
+ if(s.flower.arc===0)s.flower.arc=90;     // 圣牌挑戰獎勵更正為 90（舊預設 0）
+ if(old<3&&window.CHAR_DATA){
+  const fromV1=s.pool.some(c=>!c.icon),ren=n=>n in ALIAS?ALIAS[n]:n,renL=l=>(l||[]).map(ren).filter(Boolean);
+  s.pool=s.pool.filter(c=>ren(c.name)).map(c=>({...c,name:ren(c.name)}));
+  s.pool=s.pool.filter((c,i)=>s.pool.findIndex(x=>x.name===c.name)===i);
+  s.pool.forEach(c=>{const d=DB[c.name];if(d)Object.assign(c,{el:d.el,r:d.r,icon:d.icon})});
+  Object.values(s.plan).forEach(p=>{p.req=renL(p.req);p.cand=renL(p.cand)});
+  s.season.opening=renL(s.season.opening);s.season.guests=renL(s.season.guests);s.support=ren(s.support)||'';
+  // 舊版「加入全部已知角色」建立的池：補齊圖鑑缺少的角色（預設不參演）
+  if(fromV1)Object.values(DB).forEach(d=>{if(!s.pool.some(c=>c.name===d.name))s.pool.push({name:d.name,el:d.el,r:d.r,icon:d.icon,lv:90,cons:0,in:false})});
+ }
+ if(old<4)Object.values(s.plan).forEach(p=>{if(p.req){p.fight=p.req.slice(0,4);delete p.req}delete p.inv});
+ if(old<5)Object.values(s.plan).forEach(p=>{p.bless=[]}); // 祝福改為元素組合＋自動疊級，舊資料無法對應
+ if(old<6)Object.values(s.plan).forEach(p=>{p.ev=[...(p.buy||[]).map(n=>({t:'buy',n})),...(p.bless||[]).map(b=>({t:'bless',n:b.n,side:b.side||'L'}))];
+  p.fight=[0,1,2,3].map(i=>(p.fight||[])[i]||'');p.pick=Array.isArray(p.pick)?p.pick[0]||'':p.pick||'';delete p.buy;delete p.bless;delete p.cand});
+ Object.values(s.plan).forEach(p=>{if(p.ev)p.ev=p.ev.filter(e=>!(e.t==='myst'&&e.id==='A1'))});
+ if(s.locked)s.seasonLocked=true;
+ delete s.pickLater; // 已移除「戰後選入留給實戰決定」
+ s.v=PLAN_VER;return s}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.v)return fix(s)}catch(e){console.error('載入存檔失敗',e);try{localStorage.setItem(KEY+'-backup',localStorage.getItem(KEY))}catch(_){}}return blank()}
+function save(){const j=JSON.stringify(S);
+ if(j!==lastJSON){hist.push({j:lastJSON,label:histLabel});if(hist.length>200)hist.shift();lastJSON=j;histLabel='';paintUndo()}
+ try{localStorage.setItem(KEY,j)}catch(e){}}
+function paintUndo(){document.querySelectorAll('.undobtn').forEach(b=>{b.disabled=!hist.length;b.title=hist.length?`上一步${hist.at(-1).label?'：'+hist.at(-1).label:''}（Ctrl+Z）`:'沒有可以回到的上一步'})}
+function undo(){const h=hist.pop();if(!h)return toast('沒有可以回到的上一步');
+ S=JSON.parse(h.j);lastJSON=h.j;try{localStorage.setItem(KEY,h.j)}catch(e){}
+ const t=document.querySelector('[data-tab].on')?.dataset.tab;
+ if(!t||tabBlock(t))show(!S.seasonLocked?'season':!S.locked?'pool':'plan');else rerender();
+ paintUndo();toast(`已回到上一步${h.label?'：'+h.label:''}`)}
+// Ctrl+Z：在文字／數字欄位裡交給瀏覽器處理，其餘回到上一步
+document.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)||e.shiftKey||e.altKey||e.key.toLowerCase()!=='z')return;
+ if(e.target.closest('input,textarea,select'))return;if(!$('#modal').classList.contains('hide'))return;e.preventDefault();undo()});
+// 每幕：ev=依序發生的事件（邀請/祝福/神秘收穫）、fight=出戰 4 格、pick=戰後選入 1 格、variant=敵人 a/b/c
+function actPlan(k){const p=S.plan[k]||(S.plan[k]={});
+ return Object.assign(p,{ev:p.ev||[],fight:p.fight||['','','',''],pick:p.pick||'',variant:p.variant||'a',notes:p.notes||'',rr:p.rr||0,need:p.need||{},other:p.other||0,reward:p.reward??null})}
+const poolBy=n=>S.pool.find(c=>c.name===n);
+// 虛擬角色（以「任意／任一某元素」選入的人）：每次 sim() 重建，鍵為 #v1、#v2…
+let VIRT={},GEN=[],GSRC={}; // GEN：本次模擬所有「任意」選入（含已選定）的候選池
+const isVirt=n=>typeof n==='string'&&n.startsWith('#v');
+const label=n=>VIRT[n]?VIRT[n].label+(VIRT[n].bound?`→限${EL[VIRT[n].bound]}系`:''):n;
+// 虛擬角色能否填某條件：只要候選池裡還有符合的人
+const virtFits=(n,t)=>t==='@any'||VIRT[n].pool.some(x=>elOf(x)===t.slice(4));
+function info(n){if(VIRT[n])return{name:label(n),el:VIRT[n].bound||VIRT[n].el,r:4,virt:1};const p=poolBy(n),d=DB[n];return p?{...p,icon:p.icon||d?.icon}:d||{name:n}}
+const elOf=n=>info(n).el;
+const dot=el=>`<span class="dot" style="background:var(--${el||'mut'})"></span>`;
+function avatar(n){const c=info(n);
+ if(c.virt)return`<span class="noimg vimg">${c.el?dot(c.el):'✱'}</span>`;
+ if(c.img)return`<img src="${c.img}" alt="">`;
+ if(!c.icon)return`<span class="noimg" style="background:var(--${c.el||'mut'})">${esc((n||'?')[0])}</span>`;
+ // 先用本機頭像，失敗再用 yatta 線上圖
+ return`<img loading="lazy" src="assets/avatars/${c.icon}.png" onerror="if(!this.dataset.r){this.dataset.r=1;this.src='https://gi.yatta.moe/assets/UI/${c.icon}.png'}" alt="">`}
+
+/* ============ 參演名單 ============ */
+// 開幕 6 人固定在名單內；助演與自帶角色一樣佔 1 個名額
+const openingNames=()=>S.season.opening||[];
+const isOpening=n=>openingNames().includes(n);
+function openingCfg(n){return S.opening[n]||(S.opening[n]={mode:'trial',cons:0})}
+function rosterNames(){const r=[...openingNames()];
+ S.pool.forEach(c=>{if(c.in&&!r.includes(c.name))r.push(c.name)});
+ if(S.support&&!r.includes(S.support))r.push(S.support);return r}
+const rosterOK=n=>n>=ROSTER_MIN&&n<=ROSTER_MAX;
+const rosterFull=()=>rosterNames().length>=ROSTER_MAX;
+const extraCount=()=>Math.max(0,Math.min(ROSTER_MAX-ROSTER_MIN,rosterNames().length-ROSTER_MIN));
+function allowed(n){const el=elOf(n);if(!S.season.elements.length||!el||isOpening(n))return true;
+ return S.season.elements.includes(el)||S.season.guests.includes(n)}
+function tag(n){return isOpening(n)?(openingCfg(n).mode==='trial'?'開幕・試用':'開幕・自帶'):n===S.support?'助演':''}
+const isTrial=n=>isOpening(n)&&openingCfg(n).mode==='trial';
+// 開幕試用固定 90 級 C0；其餘（含開幕自帶）用角色池的設定
+function consOf(n){return isTrial(n)?0:poolBy(n)?.cons??0}
+function levelOf(n){return isTrial(n)?90:poolBy(n)?.lv??90}
+// 反應祝福：開放元素兩兩組合（無當期資料時用自訂清單）
+function blessNames(){const e=S.season.elements||[];if(e.length<2)return S.bless;
+ const r=[];for(let i=0;i<e.length;i++)for(let j=i+1;j<e.length;j++)r.push(EL[e[i]]+EL[e[j]]);return r}
+
+/* ============ 分頁 / 提示 ============ */
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>show(b.dataset.tab));
+// 流程：確定當期資料 → 確定參演名單 → 規劃
+function tabBlock(t){if(t==='pool'&&!S.seasonLocked)return'請先在「當期資料」按「確定當期資料」';
+ if(t==='plan'&&!S.seasonLocked)return'請先確定當期資料';if(t==='plan'&&!S.locked)return'請先在「角色池」按「確定參演名單」';if(t==='todo'&&(!S.seasonLocked||!S.locked))return'請先確定當期資料與參演名單';return''}
+function paintTabs(){document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('lockd',!!tabBlock(b.dataset.tab)))}
+function show(t){const m=tabBlock(t);if(m)return toast(m);
+ document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+ document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='tab-'+t));render(t);scrollTo(0,0)}
+function render(t){applyMode();paintTabs();setTimeout(paintUndo);({plan:rPlan,pool:rPool,season:rSeason,todo:rTodo})[t]()}
+// 保留捲動位置重繪，避免畫面跳動
+function rerender(){const t=document.querySelector('[data-tab].on').dataset.tab,y=scrollY;save();render(t);scrollTo(0,y)}
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2500)}
+
+/* ============ 頭像格 ============ */
+// selFn(n)：傳入時標題顯示「已選/總數」
+// pre(e)：放在該元素分組最前面的額外格子
+function elGroups(names,cell,selFn,pre){
+ const order=[...S.season.elements,...Object.keys(EL).filter(e=>!S.season.elements.includes(e))],g={};
+ names.forEach(n=>(g[elOf(n)||'other']??=[]).push(n));if(pre)order.forEach(e=>{if(pre(e))g[e]??=[]});
+ return[...order,'other'].filter(e=>g[e]).map(e=>`<div class="elgrp"><div class="eh">${dot(e)}${EL[e]||'其他'} <span class="mut" data-eg="${e}">${selFn?g[e].filter(selFn).length+'/':''}${g[e].length}</span>
+  ${S.season.elements.length&&!S.season.elements.includes(e)?'<span class="mut">（非當期元素）</span>':''}</div>
+  <div class="avs">${pre?pre(e)||'':''}${g[e].map(cell).join('')}</div></div>`).join('')}
+// 體力：右上角圓形數字
+const dots=v=>v==null?'':`<span class="stn s${v}">${v}</span>`;
+// 命座角標：左下角，0 命不顯示
+const consBadge=n=>{const c=consOf(n);return c>0?`<span class="cons">${c}</span>`:''};
+function avCell(n,{sel,dim,sta,extra='',showTag=true,cons=false}={}){const c=info(n),t=showTag&&tag(n);
+ return`<div class="av r${c.r||4} ${sel?'sel':''} ${dim?'dim':''} ${sta===0?'out':''}" data-pk="${esc(n)}" title="${esc(n)}">
+  <div class="avimg">${avatar(n)}${dots(sta)}${cons?consBadge(n):''}</div><div class="nm">${esc(label(n))}</div>${t?`<div class="tg">${t}</div>`:''}${extra}</div>`}
+function closeModal(){$('#modal').classList.add('hide');rerender()}
+function showModal(){$('#modal').classList.remove('hide')}
+// opts: names()、sel(n)、toggle(n)、block(n)=不能再選的原因、dim(n)、sta(n)、note、single=選一個就關、onClose
+function openPicker({title,names,sel,toggle,block=()=>'',bad=()=>'',dim=()=>false,sta=()=>null,note='',single=false,cons=false,onClose,head=()=>'',onDraw=()=>{},top=()=>'',pre=null}){
+ let q='';
+ const close=()=>{if(onClose)onClose();closeModal()};
+ const paint=()=>$('#mbox').querySelectorAll('[data-pk]').forEach(d=>{const n=d.dataset.pk,s=sel(n),b=s&&bad(n);
+  d.classList.toggle('sel',s&&!b);d.classList.toggle('bad',!!b);d.classList.toggle('dis',!s&&!!block(n));d.title=b?`${n}（${b}）`:n});
+ const draw=()=>{const ql=q.toLowerCase(),list=names().filter(n=>!q||n.includes(q)||tr(label(n)).toLowerCase().includes(ql));
+  $('#mbox').innerHTML=`<div class="row"><h3 style="margin:0">${esc(title)}</h3><input id="pq" placeholder="搜尋" value="${esc(q)}" size="10"><span style="flex:1"></span><button class="pri" id="pdone">${single?'取消':'完成'}</button></div>
+   ${head()}${note?`<div class="mut">${note}</div>`:''}
+   ${top()}${elGroups(list,n=>avCell(n,{dim:dim(n),sta:sta(n),showTag:false,cons}),null,pre)||'<p class="mut">沒有可選角色</p>'}`;
+  onDraw();
+  $('#mbox').querySelectorAll('[data-pk]').forEach(d=>d.onclick=()=>{const n=d.dataset.pk;
+   if(!sel(n)){const b=block(n);if(b)return toast(b)}const m=toggle(n);if(m)toast(m);save();if(single&&!m)return close();paint();const fc=$('#fcnt');if(fc)fc.textContent=$('#mbox').querySelectorAll('.av.sel').length});
+  const i=$('#pq');i.oninput=()=>{q=i.value.trim();draw();const j=$('#pq');j.focus();j.setSelectionRange(q.length,q.length)};
+  $('#pdone').onclick=single?closeModal:close;paint()};
+ $('#modal').onclick=e=>{if(e.target.id==='modal')(single?closeModal:close)()};
+ showModal();draw()}
+// 正方形選項選單：items=[{key,label,sub,dis(原因)}]，點選呼叫 onPick(key)
+// 多選方格：選好後按「完成」
+function openMulti(title,items,onDone,note=''){const sel=new Set();
+ $('#mbox').innerHTML=`<div class="row"><h3 style="margin:0">${esc(title)}</h3><span style="flex:1"></span><button id="mcancel">取消</button><button class="pri" id="mok">完成</button></div>
+  ${note?`<div class="mut">${note}</div>`:''}<div class="sqgrid">${items.map(it=>`<div class="sq ${it.dis?'dis':''}" data-mk="${esc(it.key)}" title="${esc(it.dis||'')}"><div class="sqt">${it.label}</div>${it.sub?`<div class="sqs">${it.sub}</div>`:''}</div>`).join('')}</div>`;
+ $('#mbox').querySelectorAll('[data-mk]').forEach(d=>d.onclick=()=>{const it=items.find(x=>x.key===d.dataset.mk);if(it.dis)return toast(it.dis);
+  sel.has(it.key)?sel.delete(it.key):sel.add(it.key);d.classList.toggle('picked',sel.has(it.key))});
+ $('#mcancel').onclick=closeModal;$('#mok').onclick=()=>{if(!sel.size)return toast('請選擇實際出現的選項');closeModal();onDone([...sel])};
+ $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};showModal()}
+function openMenu(title,items,onPick,note=''){
+ $('#mbox').innerHTML=`<div class="row"><h3 style="margin:0">${esc(title)}</h3><span style="flex:1"></span><button id="mcancel">取消</button></div>
+  ${note?`<div class="mut">${note}</div>`:''}<div class="sqgrid">${items.map(it=>`<div class="sq ${it.dis?'dis':''}" data-mk="${esc(it.key)}" title="${esc(it.dis||'')}">
+  <div class="sqt">${it.label}</div>${it.sub?`<div class="sqs">${it.sub}</div>`:''}</div>`).join('')}</div>`;
+ $('#mbox').querySelectorAll('[data-mk]').forEach(d=>d.onclick=()=>{const it=items.find(x=>x.key===d.dataset.mk);if(it.dis)return toast(it.dis);onPick(it.key)});
+ $('#mcancel').onclick=closeModal;$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+ showModal()}
+
+/* ============ 幕順序（圣牌挑戰可移動） ============ */
+// 圣牌 I 於第 4 幕後出現、圣牌 II 於第 6 幕後出現，都必須在第 10 幕前完成
+const ARC_AFTER={c1:'a4',c2:'a6'};
+const DEFAULT_ORDER=ACTS.map(a=>a.k);
+function validOrder(o){if(!Array.isArray(o)||o.length!==DEFAULT_ORDER.length||DEFAULT_ORDER.some(k=>!o.includes(k)))return false;
+ const ix=k=>o.indexOf(k),main=o.filter(k=>k[0]==='a');
+ if(main.join()!==DEFAULT_ORDER.filter(k=>k[0]==='a').join())return false;
+ return Object.entries(ARC_AFTER).every(([c,a])=>ix(c)>ix(a)&&ix(c)<ix('a10'))}
+function order(){if(!validOrder(S.order))S.order=[...DEFAULT_ORDER];return modeOf().arc?S.order:S.order.filter(k=>!ACT[k].arc)}
+function moveArc(k,d){const o=[...order()],i=o.indexOf(k),j=i+d;if(j<0||j>=o.length)return'';
+ [o[i],o[j]]=[o[j],o[i]];if(!validOrder(o))return k==='c1'?'圣牌挑戰 I 只能排在第 4 幕之後、第 10 幕之前':'圣牌挑戰 II 只能排在第 6 幕之後、第 10 幕之前';
+ S.order=o;return''}
+
+/* ============ 神秘收穫 ============ */
+// A：每種只能選一次；excl＝互斥（選了一個另一個不再出現）；kind＝要手動指定的角色類型
+const MYST={
+ A2:{name:'消耗所有幻劇之花，獲得隨機角色',kind:'standby'},
+ A3:{name:'獲得隨機角色，本幕戰後不選人',kind:'standby',noPick:1,excl:'A4'},
+ A4:{name:'獲得隨機特邀角色，本幕戰後不選人',kind:'guest',noPick:1,excl:'A3'},
+ A5:{name:'獲得 2 次事件選項重擲',noop:1},
+ A6:{name:'神秘收穫選項數量 +1',noop:1},
+ A7:{name:'神秘收穫可重骰一次選項',noop:1},
+ A8:{name:'標記出戰角色：參與下一場戰鬥結算 +20 花',kind:'selected'},
+ A9:{name:'邀請角色 +10 花、祝福 −10 花（永久）',excl:'A10'},
+ A10:{name:'邀請角色 −10 花、祝福 +10 花（永久）',excl:'A9'},
+ A11:{name:'珍貴收穫：花 15 抽一次 40 花神秘收穫',cost:15,sub:1},
+ A12:{name:'恢復 1 名已選角色 1 點體力',kind:'selected'},
+ A13:{name:'盛邀消耗 −20 花（永久）'}};
+// B：40 花神秘收穫的內容（可重複）
+const MYST40={
+ B1:{name:'67% 獲得 90 花',opt:['成功','失敗']},
+ B2:{name:'等機率獲得 20/60/90 花',opt:['20','60','90']},
+ B3:{name:'恢復 1 名已選角色 1~2 點體力',kind:'selected',opt:['1','2']},
+ B4:{name:'1~2 名體力耗盡角色洗回待命',kind:'exhausted',two:1},
+ B5:{name:'多一個事件選項',noop:1},
+ B6:{name:'整體祝福等級 +1'},
+ B7:{name:'之後每幕結算 +15 花'},
+ B8:{name:'戰後選人可以重擲一次',live:1},
+ B9:{name:'花為 0 時獲得 80 花（僅生效一次）'}};
+
+// 邀請種類
+const INV={el:{label:'邀請（指定元素）',n:3},all:{label:'邀請（全元素）',n:3},grand:{label:'盛邀',n:6}};
+/* ============ 逐幕模擬 ============ */
+// 每幕（進入敵人關卡前）依序處理事件：持有 − 花費 + 神秘收穫收入 = 剩餘；出戰 4 人各扣 1 體力；
+// 本幕戰鬥獎勵（含標記 +20、其他）加到下一幕；戰後選入的角色下一幕可用
+function rewardOf(a,p){const F=S.flower;if(a.k==='a10')return 0; // 第 10 幕打完就結束，不給花
+ if(p.reward!=null)return p.reward;
+ return a.arc?F.arc:a.boss?F.boss:p.variant==='c'?F.elite:F.battle}
+function sim(){
+ const F=S.flower,R=rosterNames(),ex=extraCount();
+ const st={};R.forEach(n=>st[n]=null);openingNames().forEach(n=>st[n]=STAMINA); // null=待命，數字=已選入且剩餘體力
+ const init=F.base+ex*F.perExtra,blessInit=ex*2;let bal=init,blv=blessInit,invD=0,blD=0,grD=0,plus=0,rsv=0; // rsv：花為 0 得 80 花，0＝未取得、1＝待觸發、2＝已生效
+ const lvl={},used={},rows=[];const snap=()=>({...st});VIRT={};GEN=[];GSRC={};let vc=0;
+ // 之後各幕固定格還要用到的次數（決定條件格能動用誰的體力）
+ const ord=order(),remFix={};ord.forEach(k=>actPlan(k).fight.forEach(t=>{if(t&&!isCond(t))remFix[t]=(remFix[t]||0)+1}));
+ // 規劃中有指名的角色（固定出戰、指名選入／邀請／神秘收穫）是專門要找的人，不算在「任意」選入的可能人選裡
+ const named=new Set();ord.forEach(k=>{const p=actPlan(k);p.fight.forEach(t=>{if(t&&!isCond(t))named.add(t)});if(p.pick&&!isCond(p.pick))named.add(p.pick);
+  p.ev.forEach(e=>{if(e.n&&!isCond(e.n))named.add(e.n);(e.ns||[]).forEach(x=>x&&named.add(x))})});
+ order().forEach(k=>{const a=ACT[k],p=actPlan(k),err=[],pre=snap(),before=bal,lvl0={...lvl},lines=[];let noPick=false,mark='';
+  // ref：這次選入在規劃中的位置；from：若是從「任意」選定成具體角色，記錄原本的條件
+  const unlock=(n,why,ref,from)=>{if(!n)return err.push(`${why}：尚未指定角色`);
+   const tok=isCond(n)?n:from;
+   if(tok){const el=tok==='@any'?null:tok.slice(4),pool=Object.keys(st).filter(x=>!isVirt(x)&&st[x]===null&&(!named.has(x)||x===n)&&(!el||elOf(x)===el));
+    // 前面以條件選入（尚未選定）、候選池有重疊的人，各會先拿走其中 1 位，所以實際可選人數要扣掉
+    // 最少：每個重疊的人都拿走本池 1 位；最多：盡量讓他們拿本池以外的人（用配對算出至少有幾位非得從本池拿）
+    const prior=Object.keys(VIRT).filter(v=>VIRT[v].pool.some(x=>pool.includes(x)));
+    const outside=[...new Set(prior.flatMap(v=>VIRT[v].pool))].filter(x=>!pool.includes(x));
+    const away=matchSlots(prior.map(v=>({ok:c=>VIRT[v].pool.includes(outside[c])})),outside.length,outside.map(()=>1)).filter(x=>x>=0).length;
+    const effMin=Math.max(0,pool.length-prior.length),effMax=Math.max(0,pool.length-(prior.length-away)),eff=effMin;
+    const lbl=`${condText(tok)}（${a.label}${/^(邀請|盛邀|戰後選入)/.test(why)?why.replace(/（.*?）/g,''):'神秘收穫'}）`;
+    GEN.push({...ref,tok,pool,prior,eff,effMin,effMax,lbl,chosen:isCond(n)?null:n});if(!isCond(n))GSRC[n]=ref;
+    if(isCond(n)){if(!pool.length)return err.push(`${why}：沒有待命的${el?EL[el]+'系':''}角色`);
+     const key='#v'+(++vc);VIRT[key]={el,label:lbl,pool,prior,eff,ref};st[key]=STAMINA;
+     if(effMax<=0)err.push(`${why}：符合條件的人都已被前面的條件選入拿走`);
+     else if(effMin<=0)err.push(`${why}：最壞情況下符合條件的人會被前面的條件選入拿光（最多 ${effMax} 人）`);return}}
+   if(!(n in st))return err.push(`${why}：「${n}」不在參演名單`);
+   if(st[n]!==null)return err.push(`${why}：「${n}」已選入`);st[n]=STAMINA};
+  const elemBless=(n,side,why)=>{const l=(lvl[n]||0)+1;lvl[n]=l;blv++;
+   if(l>MAX_BLESS)err.push(`祝福「${n}」超過 ${MAX_BLESS} 級`);return l};
+  const applyB=(e,why)=>{const b=MYST40[e.b];let g=0;if(!b){err.push(`${why}：未選內容`);return 0}
+   if(e.b==='B1')g=e.o==='失敗'?0:90;
+   if(e.b==='B2')g=+(e.o||20);
+   if(e.b==='B3'){if(!e.n)err.push(`${why}：尚未指定角色`);else if(st[e.n]==null)err.push(`${why}：「${e.n}」尚未選入`);else st[e.n]=Math.min(STAMINA,st[e.n]+(+e.o||1))}
+   if(e.b==='B4')(e.ns||[]).filter(Boolean).forEach(n=>{if(st[n]!==0)err.push(`${why}：「${n}」體力未耗盡`);else st[n]=null});
+   if(e.b==='B6')blv++;
+   if(e.b==='B7')plus+=15;
+   if(e.b==='B9'){if(rsv)err.push(`${why}：「${b.name}」${rsv===1?'已取得、尚未生效':'已生效過'}，這次沒有效果`);else rsv=1}return g};
+  p.ev.forEach((e,j)=>{const ctx=snap(),bal0=bal;let c=0,g=0,l=0;
+   if(e.t==='buy'){c=e.kind==='grand'?F.grand+invD+grD:F.invite+invD;g=e.cheer?25:0;unlock(e.n,INV[e.kind||'all'].label,{k,kind:'ev',j},e.from)}
+   else if(e.t==='bless'){c=F.bless+blD;l=elemBless(e.n)}
+   else if(e.t==='m40'){c=40;g=applyB(e,'40 花神秘收穫')}
+   else if(e.t==='myst'){const d=MYST[e.id],why=d?.name||e.id;
+    if(used[e.id])err.push(`「${why}」已在${ACT[used[e.id]].label}選過（每種只能一次）`);
+    if(d?.excl&&used[d.excl])err.push(`「${why}」與「${MYST[d.excl].name}」互斥`);
+    used[e.id]=k;c=d?.cost||0;
+    if(e.id==='A2'){c=Math.max(0,bal);unlock(e.n,why,{k,kind:'ev',j},e.from)}
+    if(e.id==='A3')unlock(e.n,why,{k,kind:'ev',j},e.from);
+    if(e.id==='A4'&&e.n)unlock(e.n,why);
+    if(d?.noPick)noPick=true;
+    if(e.id==='A8'){if(!e.n)err.push(`${why}：尚未指定角色`);else if(st[e.n]==null)err.push(`${why}：「${e.n}」尚未選入`);else mark=e.n}
+    if(e.id==='A9'){invD+=10;blD-=10}
+    if(e.id==='A10'){invD-=10;blD+=10}
+    if(e.id==='A13')grD-=20;
+    if(e.id==='A11')g=applyB(e,why);
+    if(e.id==='A12'){if(!e.n)err.push(`${why}：尚未指定角色`);else if(st[e.n]==null)err.push(`${why}：「${e.n}」尚未選入`);else st[e.n]=Math.min(STAMINA,st[e.n]+1)}}
+   const short=c>0&&bal0-c<0; // 花費在收入之前結算，付款當下不得為負
+   if(short)err.push(`幻劇之花不足以支付：持有 ${bal0}，需要 ${c}（收入要付款後才拿到）`);
+   bal=bal0-c+g;let rz=false;if(rsv===1&&bal===0){bal=80;g+=80;rsv=2;rz=true} // 花歸零時觸發一次
+   lines.push({e,j,c,g,l,ctx,bal,short,rz});if(!short&&bal<0)err.push(`幻劇之花不足（${bal}）`)});
+  const left=bal,entry=snap(),fight=p.fight.filter(Boolean);
+  if(fight.length!==4)err.push(`出戰需剛好 4 人（目前 ${fight.length}）`);
+  fight.filter(n=>!isCond(n)).forEach(n=>{remFix[n]--;if(!(n in st))err.push(`出戰「${label(n)}」不在參演名單`);else if(st[n]===null)err.push(`「${label(n)}」尚未選入，不能出戰`);else if(st[n]<=0)err.push(`「${label(n)}」體力已耗盡`);else st[n]--});
+  // 條件格：從此刻符合條件、還有體力的人中挑「扣掉之後固定格需求後最有餘裕」的人（同分優先用條件選入的虛擬角色）
+  const usedNow=new Set(fight.filter(n=>!isCond(n))),assign=p.fight.map(()=>null);
+  p.fight.forEach((t,si)=>{if(!isCond(t))return;
+   // 排除體力要留給之後固定格的人（扣掉之後的固定出戰次數後沒有剩）
+   const spare=x=>st[x]-(remFix[x]||0);
+   const fits=Object.keys(st).filter(x=>st[x]>0&&!usedNow.has(x)&&(isVirt(x)?virtFits(x,t):t==='@any'||elOf(x)===t.slice(4)));
+   const cands=fits.filter(x=>spare(x)>0).sort((x,y)=>spare(y)-spare(x)||isVirt(y)-isVirt(x));
+   if(!cands.length){err.push(fits.length?`沒有人能填「${condText(t)}」（${fits.map(label).join('、')} 的體力要留給後面的固定格）`:`沒有人能填「${condText(t)}」`);assign[si]={who:null,cands,reserved:fits};return}
+   const who=cands[0];
+   // 用條件選入的人填元素格：把他的候選池收窄到該元素（之後也受這個限制）
+   if(isVirt(who)&&t!=='@any'){const v=VIRT[who],el=t.slice(4);if(!v.bound&&!v.el){v.pool=v.pool.filter(x=>elOf(x)===el);v.bound=el}}
+   st[who]--;usedNow.add(who);assign[si]={who,cands,lbl:label(who)}});
+  const bonus=mark&&fight.includes(mark)?20:0,reward=rewardOf(a,p),other=+p.other||0;
+  bal+=reward+bonus+plus+other;
+  const postBattle=snap();
+  // 戰後選入必選 1 名；例外：神秘收穫「戰後不選人」、最後一幕、已無待命角色
+  const last=k===order().at(-1),anyStand=Object.values(postBattle).some(v=>v===null);
+  if(p.pick){if(noPick)err.push('本幕有「戰後不選人」的神秘收穫，戰後選入無效');else if(last)err.push('最後一幕結束後不選人');else unlock(p.pick,'戰後選入',{k,kind:'pick'},p.pickFrom)}
+  else if(!noPick&&!last&&anyStand)err.push('戰後選入尚未選擇（必選 1 名）');
+  rows.push({a,p,err,last,assign,gen:GEN.filter(x=>x.k===k),pre,entry,postBattle,after:snap(),before,lines,left,reward,bonus,plus,other,next:bal,blv,lvl0,lvl:{...lvl},noPick,used:{...used}})});
+ return{init,ex,blessInit,rows,end:bal,R}}
+function summary(r){const s={avail:0,used:0,stand:0};Object.values(r).forEach(v=>v===null?s.stand++:v>0?s.avail++:s.used++);return s}
+
+/* ============ 檢查 ============ */
+function checks(sm){
+ const out=[],R=rosterNames();
+ out.push({lv:rosterOK(R.length)?'ok':'warn',t:`參演角色 ${R.length} 名（開幕 ${openingNames().length}${S.support?'，含助演 1':''}；需 ${ROSTER_MIN}~${ROSTER_MAX}）`});
+ const low=R.filter(n=>levelOf(n)<70);if(low.length)out.push({lv:'warn',t:'未達 Lv.70：'+low.join('、')});
+ const bad=R.filter(n=>!allowed(n));if(bad.length)out.push({lv:'warn',t:'非當期元素且非特邀：'+bad.join('、')});
+ sm.rows.filter(r=>r.p.done).forEach(r=>r.err.forEach(e=>out.push({lv:'warn',t:`${r.a.label}：${e}`})));
+ const nd=sm.rows.filter(r=>r.p.done).length;out.push({lv:'mut',t:`已完成 ${nd}/${sm.rows.length} 幕（按各幕的「完成」後才檢查該幕）`});
+ if(!S.season.elements.length)out.push({lv:'mut',t:'尚未載入當期資料（不影響使用，只是沒有開幕角色、元素限制與元素祝福組合）'});
+ return out}
+
+/* ============ 規劃頁 ============ */
+function statusPanel(snapObj,title){const sel=[],stand=[];Object.entries(snapObj).forEach(([n,v])=>(v===null?stand:sel).push(n));
+ const s=summary(snapObj);
+ return`<details class="stp"><summary>${title}：可出戰 ${s.avail}・體力耗盡 ${s.used}・待命 ${s.stand}</summary>
+  <h4>已選入</h4><div class="avs four">${sel.sort((a,b)=>snapObj[b]-snapObj[a]).map(n=>avCell(n,{sta:snapObj[n],showTag:false,cons:true})).join('')||'<span class="mut">無</span>'}</div>
+  <h4>待命（可選入）</h4>${elGroups(stand,n=>avCell(n,{showTag:false,cons:true})).replace(/class="avs"/g,'class="avs four"')||'<span class="mut">無</span>'}</details>`}
+// 出戰角色在進場時是否可用（尚未選入／體力耗盡／不在名單）
+function fightBad(r,n){if(!n||isCond(n))return'';if(!(n in r.entry))return'不在參演名單';if(r.entry[n]===null)return'尚未選入';if(r.entry[n]<=0)return'體力已耗盡';return''}
+// 角色格：頭像（保留星級底色）＋右上角圓形體力數字；空格顯示 ＋
+function slot(n,attr,{sta,small,dis,invalid,ctag}={}){if(isCond(n))return`<div class="slot cond" ${attr} title="${condText(n)}">${n==='@any'?'<span class="ci">✱</span>':`<span class="ci">${dot(n.slice(4))}</span>`}<span class="ct">${condText(n)}</span></div>`;return`<div class="slot ${n?'r'+(info(n).r||4):'empty'} ${small?'sm':''} ${dis?'dis':''} ${sta===0?'out':''} ${n&&(invalid||!allowed(n))?'bad':''}" ${attr} title="${esc(label(n||''))}${invalid?'（'+invalid+'）':''}">${invalid?'<span class="inv">!</span>':''}${ctag?`<span class="ctag">${condText(ctag)}</span>`:''}
+ ${n?avatar(n)+(sta!=null?`<span class="stn s${sta}">${sta}</span>`:'')+consBadge(n):'＋'}</div>`}
+const sec=(title,body,extra='')=>`<div class="sec"><div class="sh">${title}${extra}</div><div class="sb">${body}</div></div>`;
+// 事件摘要（直式減法的一列）
+function evText(e,ln){const av=n=>!n?'<span class="warn">未指定</span>':isCond(n)?`<b>${condText(n)}</b>`:`<span class="mini">${avatar(n)}</span>${esc(label(n))}`;
+ const bTxt=()=>{const b=MYST40[e.b];if(!b)return'<span class="warn">未選內容</span>';
+  return b.name+(e.o?`：<b>${esc(e.o)}</b>`:'')+(b.two?' '+((e.ns||[]).filter(Boolean).map(av).join(' ')||'（無）'):b.kind?' '+av(e.n):'')};
+ if(e.t==='buy')return`${INV[e.kind||'all'].label}${e.kind==='el'&&e.el?'・'+EL[e.el]:''} ${av(e.n)}${fromTag(e)}${e.cheer?' <span class="ok">（場外觀眾援助 +25）</span>':''}`;
+ if(e.t==='bless')return`祝福・${esc(e.n)} Lv${ln.l}`;
+ if(e.t==='m40')return`40 花神秘收穫・${bTxt()}`;
+ const d=MYST[e.id]||{name:e.id};
+ return`神秘收穫・${d.name}${d.noop?' <small class="mut">(無模擬效果)</small>':''}${d.sub?'：'+bTxt():d.kind?' '+(e.n?av(e.n)+fromTag(e):d.kind==='guest'?'（無特邀可選，無效果）':av('')):''}`}
+const fromTag=e=>e.from?` <span class="ctag2">${condText(e.from)}</span>`:'';
+// 「任意」選入的人數與查看／選定入口（已選定的也保留）
+const effText=g=>g.effMax>g.effMin?`${g.effMin}～${g.effMax}`:`${g.effMin}`;
+// 條件選入的人（含已從「任意」選定的人）：點擊開啟他那筆選入的「查看／選定」視窗（與選入處共用同一個視窗）
+const jumpAttr=n=>{const r=VIRT[n]?.ref||GSRC[n];return r?`data-jump="${r.k}|${r.kind}|${r.j??''}" title="點擊查看／選定"`:''};
+const genLine=g=>`<div class="mut genline">可能選到：${effText(g)} 人<button class="sm" data-gpool="${g.k}|${g.kind}|${g.j??''}">查看／選定</button>${g.chosen?` <span class="ok">已選定：${esc(g.chosen)}</span>`:''}</div>`;
+function evRow(k,ln,gen){const e=ln.e,j=ln.j,g=gen?.find(x=>x.kind==='ev'&&x.j===j),warnTxt=ln.short?`<div class="warn" style="font-size:12px">⚠ 持有不足以支付（付款前 ${ln.bal-ln.g+ln.c}）</div>`:'';
+ const side=ln.l===2||ln.l===4?`<span class="sides"><button class="sm ${e.side!=='R'?'on':''}" data-sd="${k}|${j}|L">左</button><button class="sm ${e.side==='R'?'on':''}" data-sd="${k}|${j}|R">右</button></span>`:'';
+ return`<div class="evrow"><div class="evl" ${e.t!=='bless'?`data-ee="${k}|${j}" title="點擊重新選擇"`:''}>${evText(e,ln)}${ln.rz?' <span class="ok">（花歸零：+80）</span>':''}${side}${warnTxt}${g?genLine(g):''}</div>
+  <b>${ln.c?'− '+ln.c:''}${ln.c&&ln.g?' / ':''}${ln.g?'+ '+ln.g:''}${!ln.c&&!ln.g?'0':''}</b><x data-ex="${k}|${j}" title="移除">×</x></div>`}
+
+/* --- 事件選擇流程（正方形選項 → 彈窗進一步選擇） --- */
+const KIND_TITLE={standby:'選擇待命角色',guest:'選擇未選的特邀角色',selected:'選擇已選入角色',exhausted:'選擇體力耗盡角色'};
+const KIND_FLT={standby:c=>n=>c[n]===null,guest:c=>n=>c[n]===null&&S.season.guests.includes(n),selected:c=>n=>c[n]!=null,exhausted:c=>n=>c[n]===0};
+function evCtx(k,j){const r=sim().rows.find(x=>x.a.k===k);return j==null?r.entry:r.lines.find(x=>x.j===j).ctx}
+function commitEv(k,j,e){const ev=actPlan(k).ev;j==null?ev.push(e):ev[j]=e;markEdit(k);save()}
+function chooseChar(kind,ctx,cb,title,extra={}){const f=KIND_FLT[kind](ctx),list=Object.keys(ctx).filter(f).filter(n=>!isVirt(n)||kind!=='standby').filter(extra.filter||(()=>true));
+ if(!list.length&&kind==='guest'){cb('');return closeModal()}
+ openPicker({title:title||KIND_TITLE[kind],single:1,cons:true,names:()=>list,sel:()=>false,toggle:n=>{cb(n)},
+  sta:n=>kind==='selected'||kind==='exhausted'?ctx[n]:null,note:list.length?'':'沒有符合的角色。',...extra})}
+function flowBuy(k,j,kind,el){const ctx=evCtx(k,j),cur=j==null?null:actPlan(k).ev[j];let cheer=!!cur?.cheer;
+ kind=kind||cur?.kind||'all';
+ if(kind==='el'&&!el){const els=S.season.elements.length?S.season.elements:Object.keys(EL);
+  return openMenu('邀請（指定元素）：這次是哪個元素？',els.map(e=>({key:e,label:`${dot(e)} ${EL[e]}`})),e=>flowBuy(k,j,'el',e))}
+ chooseChar('standby',ctx,n=>commitEv(k,j,{t:'buy',n,cheer,kind,el}),`${INV[kind].label}${el?'・'+EL[el]:''}（選擇待命角色）`,{filter:el?n=>elOf(n)===el:null,
+  head:()=>`<label class="cheer"><input type="checkbox" id="cheer" ${cheer?'checked':''}> 場外觀眾援助 +25 花</label>`,
+  top:()=>`<div class="elgrp"><div class="eh">不指定角色</div><div class="avs">${condCell(el?'@el:'+el:'@any')}</div></div>`,
+  onDraw:()=>{$('#cheer').onchange=e=>{cheer=e.target.checked};document.querySelectorAll('#mbox [data-addc]').forEach(d=>d.onclick=()=>{commitEv(k,j,{t:'buy',n:d.dataset.addc,cheer,kind,el});closeModal()})}})}
+function flowB40(k,j,base){const ctx=evCtx(k,j);
+ openMenu(base.t==='m40'?'40 花神秘收穫':'珍貴收穫（15 花）',Object.entries(MYST40).map(([key,b])=>({key,label:b.name,sub:b.noop?'無模擬效果':''})),b=>{
+  const d=MYST40[b],e={...base,b},fin=x=>{commitEv(k,j,x)};
+  const afterOpt=o=>{const x={...e,o};
+   if(d.two){const ns=[];openPicker({title:'選擇 1~2 名體力耗盡角色',cons:true,names:()=>Object.keys(ctx).filter(KIND_FLT.exhausted(ctx)),sel:n=>ns.includes(n),
+     toggle:n=>{const i=ns.indexOf(n);i>=0?ns.splice(i,1):ns.push(n)},block:()=>ns.length>=2?'最多 2 名':'',sta:n=>ctx[n],onClose:()=>fin({...x,ns})})}
+   else if(d.kind)chooseChar(d.kind,ctx,n=>fin({...x,n}));
+   else{fin(x);closeModal()}};
+  if(d.opt)openMenu(d.name,d.opt.map(o=>({key:o,label:o})),afterOpt);else afterOpt('')})}
+function flowMyst(k,j){const sm=sim(),cur=j==null?null:actPlan(k).ev[j];
+ const taken=id=>sm.rows.some(r=>r.p.ev.some((e,i)=>e.t==='myst'&&e.id===id&&!(r.a.k===k&&i===j)));
+ openMenu('神秘收穫（每種限一次）',Object.entries(MYST).map(([key,d])=>({key,label:d.name,sub:(d.cost?`−${d.cost} 花　`:'')+(d.noop?'無模擬效果':''),
+   dis:taken(key)?'已選過（每種只能一次）':d.excl&&taken(d.excl)?`已選「${MYST[d.excl].name}」，兩者互斥`:''})),id=>{
+  const d=MYST[id],ctx=evCtx(k,j),base={t:'myst',id};
+  if(d.sub)return flowB40(k,j,base);
+  // 得到的人可以只指定「任意／任一某元素」（特邀角色除外）
+  if(d.kind==='standby')return chooseChar(d.kind,ctx,n=>commitEv(k,j,{...base,n}),null,{
+   top:()=>`<div class="elgrp"><div class="eh">不指定角色</div><div class="avs">${condCell('@any')}</div></div>`,
+   pre:e=>(S.season.elements.length?S.season.elements:Object.keys(EL)).includes(e)?condCell('@el:'+e):'',
+   onDraw:()=>document.querySelectorAll('#mbox [data-addc]').forEach(c=>c.onclick=()=>{commitEv(k,j,{...base,n:c.dataset.addc});closeModal()})});
+  if(d.kind)return chooseChar(d.kind,ctx,n=>commitEv(k,j,{...base,n}));
+  commitEv(k,j,base);closeModal()})}
+function markEdit(k){actPlan(k).done=false}
+
+function rPlan(){
+ const R=rosterNames();
+ if(!S.locked){$('#tab-plan').innerHTML=`<div class="card"><h3>請先確定參演名單</h3>
+  <p>目前參演 <b class="${rosterOK(R.length)?'ok':'warn'}">${R.length}</b> 名（需 ${ROSTER_MIN}~${ROSTER_MAX}，含開幕 ${openingNames().length} 名與助演）。
+  到「角色池」勾選角色後按「確定參演名單」，才能開始規劃。</p><button class="pri" id="goPool">前往角色池</button></div>`;
+  $('#goPool').onclick=()=>show('pool');return}
+ const sm=sim(),out=checks(sm),BN=blessNames(),sm2=sm;
+ let h=`<div class="card"><div class="row"><b>${esc(S.season.name||'未載入當期資料')}</b>
+  ${S.season.elements.map(e=>`<span class="chip" style="padding-left:8px">${dot(e)}${EL[e]}</span>`).join('')}
+  <span class="mut">參演 ${R.length} 名・額外 ${sm.ex} 名 → 初始幻劇之花 ${sm.init}、整體祝福等級 Lv${sm.blessInit}</span></div>
+  <div style="margin-top:6px">${out.map(o=>`<div class="${o.lv}">${o.lv==='ok'?'✔':o.lv==='warn'?'⚠':'ℹ'} ${esc(o.t)}</div>`).join('')}</div>
+  <div class="row" style="margin-top:6px"><button class="pri" id="alldone">全部完成</button><button id="allundo">全部取消完成</button><button id="allreset">全部重置</button>${resetAnyBtn()}<button class="undobtn" id="planundo">↶ 上一步</button><span class="mut">（Ctrl+Z）</span></div>
+  ${feasCard(sm)}
+  <div class="fixedav">${statusPanel(sm.rows[0].pre,'開局狀態')}</div></div><div class="grid">`;
+ sm.rows.forEach(r=>{const a=r.a,k=a.k,p=r.p,inf=S.season.acts[k]||{},normal=!a.boss&&!a.arc;
+  const tiles=[...(S.season.elements.length?S.season.elements:Object.keys(EL)).map(e=>`<div class="sq" data-addbuy="${k}|el|${e}"><div class="sqi">${dot(e)}</div><div class="sqt">邀請・${EL[e]}</div><div class="sqs">3 選 1・−${S.flower.invite}</div></div>`),
+   `<div class="sq" data-addbuy="${k}|all"><div class="sqi">👥</div><div class="sqt">邀請（全元素）</div><div class="sqs">3 選 1・−${S.flower.invite}</div></div>`,
+   `<div class="sq" data-addbuy="${k}|grand"><div class="sqi">🎭</div><div class="sqt">盛邀</div><div class="sqs">6 選 1・−${S.flower.grand}</div></div>`,
+   ...BN.map(b=>{const l0=r.lvl0[b]||0,full=(r.lvl[b]||0)>=MAX_BLESS;return`<div class="sq ${full?'dis':''}" data-ba="${k}|${esc(b)}"><div class="sqi">${[...b].map(c=>dot(Object.keys(EL).find(x=>EL[x]===c))).join('')}</div><div class="sqt">祝福 ${esc(b)}</div><div class="sqs">Lv${l0}</div></div>`}),
+   `<div class="sq" data-am="${k}"><div class="sqi">✦</div><div class="sqt">神秘收穫</div></div>`,
+   `<div class="sq" data-a40="${k}"><div class="sqi">🌸</div><div class="sqt">40 花神秘收穫</div><div class="sqs">−40</div></div>`];
+  h+=`<div class="card ${a.boss?'boss':a.arc?'arc':''} ${p.done?'done':''}"><div class="row"><h3 style="margin:0">${a.label}${a.boss?' ・首領':''}</h3>
+   ${a.arc?`<button class="sm" data-mv="${k}|-1">▲</button><button class="sm" data-mv="${k}|1">▼</button>`:''}
+   ${normal?`<select data-var="${k}">${['a','b','c'].map(v=>`<option value="${v}" ${(p.variant||'a')===v?'selected':''}>${actVariants(inf)[v]?esc(actVariants(inf)[v]):'敵人 '+v.toUpperCase()}${v==='c'?'（精英 +'+S.flower.elite+'）':''}</option>`).join('')}</select>`:''}
+   <span style="flex:1"></span><button class="sm" data-reset="${k}">重置</button>${p.done?`<button class="sm donebtn on" data-done="${k}">✓ 已完成</button>`:`<button class="sm pri" data-done="${k}">完成</button>`}</div>
+  ${!normal&&inf.name?`<div><b>${esc(inf.name)}</b></div>`:''}
+  ${p.done?r.err.map(e=>`<div class="warn">⚠ ${esc(e)}</div>`).join('')||'<div class="ok">✔ 本幕沒有問題</div>':''}
+  <details class="blv"><summary>整體祝福等級 <b>Lv${r.blv}</b></summary><div class="mut">全角色：攻擊力 +${50*r.blv}、生命值 +${800*r.blv}、防禦力 +${50*r.blv}、元素精通 +${20*r.blv}<br>
+   （帶 28 人為 0 級，每多 1 人 +2；每選 1 次反應祝福 +1）</div></details>
+  ${sec('① 事件選擇',`<div class="sqgrid">${tiles.join('')}</div>`)}
+  ${sec('② 事件順序與幻劇之花',`<div class="ledger"><div class="evrow"><div class="evl">進場持有</div><b>🌸 ${r.before}</b></div>
+   ${r.lines.map(ln=>evRow(k,ln,r.gen)).join('')}
+   <div class="evrow sum ${r.left<0?'warn':''}"><div class="evl">剩餘</div><b>${r.left}</b></div></div>`)}
+  ${sec('③ 出戰',`<div class="slots">${[0,1,2,3].map(s=>slot(p.fight[s],`data-fs="${k}|${s}"`,{sta:p.fight[s]?r.entry[p.fight[s]]:null,invalid:fightBad(r,p.fight[s])})).join('')}</div>
+   ${r.assign.some(Boolean)?`<div class="possib">${r.assign.map((x,si)=>x?`<div><b>${condText(p.fight[si])}</b> → ${x.who?`<span class="chip ${jumpAttr(x.who)?'jump':''}" ${jumpAttr(x.who)}>${avatar(x.who)}${esc(x.lbl||label(x.who))}</span>`:'<span class="warn">沒有人</span>'}
+     <span class="mut">可用 ${x.cands.length} 人：${x.cands.slice(0,8).map(c=>esc(label(c))+'('+r.entry[c]+')').join('、')}${x.cands.length>8?'…':''}${x.reserved?.length?`；體力要留給後面固定格：${x.reserved.map(c=>esc(label(c))).join('、')}`:''}</span></div>`:'').join('')}</div>`:''}`)}
+  ${sec(`④ 戰後選入${r.noPick?' <span class="warn">本幕不選人</span>':r.last?' <span class="mut">最後一幕，不選人</span>':''}`,
+   `<div class="slots">${slot(p.pick,`data-ps="${k}"`,{ctag:p.pickFrom,dis:r.noPick||r.last,invalid:p.pick&&!isCond(p.pick)&&r.postBattle[p.pick]!==null?'已選入過或不在名單':''})}</div>
+   ${(g=>g?genLine(g):'')(r.gen.find(x=>x.kind==='pick'))}
+   <div class="mut" style="margin-top:6px">${a.k==='a10'?'🌸 第 10 幕打完即結束，不給花':`🌸 本幕獎勵 +${r.reward}${r.bonus?` +標記 ${r.bonus}`:''}${r.plus?` +收穫 ${r.plus}`:''}${r.other?` ${r.other>0?'+':''}${r.other}`:''} → 下一幕持有 ${r.next}`}</div>`)}
+  ${sec('備註',`<textarea data-nt="${k}" style="min-height:44px">${esc(p.notes)}</textarea>`)}
+  ${statusPanel(r.entry,'進場時角色狀態')}</div>`});
+ $('#tab-plan').innerHTML=h+'</div>';
+ const T=$('#tab-plan'),row=k=>sm.rows.find(r=>r.a.k===k);
+ $('#allreset').onclick=()=>{histLabel='全部重置';S.plan={};S.order=[...DEFAULT_ORDER];rerender();toast('已重置所有幕，可按「上一步」還原')};
+ $('#planundo').onclick=undo;
+ bindResetAny();
+ T.querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>{const k=b.dataset.reset;histLabel=`重置${ACT[k].label}`;delete S.plan[k];rerender()});
+ $('#alldone').onclick=()=>{order().forEach(k=>actPlan(k).done=true);rerender()};
+ $('#allundo').onclick=()=>{order().forEach(k=>actPlan(k).done=false);rerender()};
+ T.querySelectorAll('[data-done]').forEach(b=>b.onclick=()=>{const p=actPlan(b.dataset.done);p.done=!p.done;rerender()});
+ T.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{const[k,d]=b.dataset.mv.split('|');const m=moveArc(k,+d);if(m)return toast(m);rerender()});
+ T.querySelectorAll('[data-var]').forEach(s=>s.onchange=()=>{const p=actPlan(s.dataset.var);p.variant=s.value;markEdit(s.dataset.var);rerender()});
+ T.querySelectorAll('[data-addbuy]').forEach(b=>b.onclick=()=>{const[k,kind,el]=b.dataset.addbuy.split('|');flowBuy(k,null,kind,el)});
+ T.querySelectorAll('[data-ba]').forEach(b=>b.onclick=()=>{if(b.classList.contains('dis'))return toast('此祝福已達 4 級');
+  const[k,n]=b.dataset.ba.split('|');commitEv(k,null,{t:'bless',n,side:'L'});rerender()});
+ T.querySelectorAll('[data-am]').forEach(b=>b.onclick=()=>flowMyst(b.dataset.am));
+ T.querySelectorAll('[data-a40]').forEach(b=>b.onclick=()=>flowB40(b.dataset.a40,null,{t:'m40'}));
+ T.querySelectorAll('[data-ee]').forEach(d=>d.onclick=ev=>{if(ev.target.closest('[data-gpool]'))return;const[k,j]=d.dataset.ee.split('|'),e=actPlan(k).ev[j];
+  e.t==='buy'?flowBuy(k,+j,e.kind||'all',e.el):e.t==='m40'?flowB40(k,+j,{t:'m40'}):flowMyst(k,+j)});
+ T.querySelectorAll('[data-ex]').forEach(x=>x.onclick=()=>{const[k,j]=x.dataset.ex.split('|');actPlan(k).ev.splice(j,1);markEdit(k);rerender()});
+ T.querySelectorAll('[data-sd]').forEach(s=>s.onclick=()=>{const[k,j,side]=s.dataset.sd.split('|');actPlan(k).ev[j].side=side;markEdit(k);rerender()});
+ T.querySelectorAll('[data-fs]').forEach(s=>s.onclick=()=>{const[k,i]=s.dataset.fs.split('|'),p=actPlan(k),r=row(k);
+  // 條件格：已加入幾個就顯示幾個已選框，旁邊永遠多一個空框；點空框＝再加一個，點已選框＝取消
+  const refresh=()=>{const c=$('#fcnt');if(c)c.textContent=picks.length;const w=$('#fwarn');if(w)w.innerHTML=fwarn();
+   document.querySelectorAll('#mbox [data-cw]').forEach(box=>{const t=box.dataset.cw,n=picks.filter(x=>x===t).length;
+    box.innerHTML=Array(n).fill(condCell(t).replace('class="av condcell"','class="av condcell sel" data-cdel="1"')).join('')+condCell(t).replace('class="av condcell"',`class="av condcell ${picks.length>=4?'dis':''}" data-cadd="1"`);
+    box.querySelectorAll('[data-cdel]').forEach(d=>d.onclick=()=>{picks.splice(picks.indexOf(t),1);refresh()});
+    box.querySelectorAll('[data-cadd]').forEach(d=>d.onclick=()=>{if(picks.length>=4)return toast('已選滿 4 人，請先取消其他角色');picks.push(t);refresh()})})};
+  const picks=p.fight.filter(Boolean),fwarn=()=>picks.some(n=>fightBad(r,n))?`<div class="warn">紅框的角色目前不能出戰：${picks.filter(n=>fightBad(r,n)).map(n=>n+'（'+fightBad(r,n)+'）').join('、')}</div>`:'';
+  openPicker({title:`${r.a.label}・選擇出戰（4 人）`,cons:true,names:()=>[...new Set([...Object.keys(r.entry),...picks])],bad:n=>fightBad(r,n),dim:n=>!!fightBad(r,n),
+   sel:n=>picks.includes(n),block:()=>picks.length>=4?'已選滿 4 人，請先取消其他角色':'',
+   toggle:n=>{const x=picks.indexOf(n);x>=0?picks.splice(x,1):picks.push(n);setTimeout(refresh)},sta:n=>r.entry[n],
+   head:()=>`<div class="mut">已選 <b id="fcnt">${picks.length}</b>/4；點數＝進場時剩餘體力。選好後按「完成」。</div>
+    <div id="fwarn">${fwarn()}</div><div class="mut">淡化＝尚未選入或體力耗盡，仍可選，但會標紅框，按「完成」時會警告。</div>`,
+   top:()=>`<div class="elgrp"><div class="eh">條件格 <span class="mut">點空框加一個（旁邊會再出現一個），點已選的框取消</span></div><div class="avs"><span class="cw" data-cw="@any"></span></div></div>`,
+   pre:e=>(S.season.elements.length?S.season.elements:Object.keys(EL)).includes(e)?`<span class="cw" data-cw="@el:${e}"></span>`:'',
+   onDraw:refresh,
+   onClose:()=>{p.fight=[0,1,2,3].map(x=>picks[x]||'');markEdit(k)}})});
+ T.querySelectorAll('[data-ps]').forEach(s=>s.onclick=()=>{const k=s.dataset.ps,p=actPlan(k),r=row(k);if(r.noPick)return toast('本幕有「戰後不選人」的神秘收穫');if(r.last)return toast('最後一幕結束後不選人');
+  openPicker({title:`${r.a.label}・戰後選入`,cons:true,single:1,names:()=>Object.keys(r.postBattle).filter(n=>r.postBattle[n]===null||p.pick===n),
+   sel:n=>p.pick===n,bad:n=>r.postBattle[n]!==null?'已選入過或不在名單':'',toggle:n=>{p.pick=n;delete p.pickFrom;markEdit(k)},note:'只列出戰後仍在待命的角色；點其他角色即可更換。也可以只指定「任意」或「任一某元素」。',
+   top:()=>`<div class="elgrp"><div class="eh">不指定角色</div><div class="avs">${condCell('@any')}</div></div>`,
+   pre:e=>(S.season.elements.length?S.season.elements:Object.keys(EL)).includes(e)?condCell('@el:'+e):'',
+   onDraw:()=>document.querySelectorAll('#mbox [data-addc]').forEach(d=>{d.classList.toggle('sel',p.pick===d.dataset.addc);d.onclick=()=>{p.pick=d.dataset.addc;delete p.pickFrom;markEdit(k);closeModal()}})})});
+ T.querySelectorAll('[data-gpool]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const[k,kind,jj]=b.dataset.gpool.split('|');openGenPool(k,kind,jj===''?null:+jj)});
+ T.querySelectorAll('[data-jump]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const[k,kind,jj]=b.dataset.jump.split('|');openGenPool(k,kind,jj===''?null:+jj)});
+ T.querySelectorAll('[data-nt]').forEach(s=>s.onchange=()=>{actPlan(s.dataset.nt).notes=s.value;save()});
+}
+
+/* ============ 出戰條件格 ============ */
+// 出戰格的值：角色名＝固定；'@any'＝任意；'@el:cryo'＝任一該元素
+const isCond=t=>typeof t==='string'&&t.startsWith('@');
+const condText=t=>t==='@any'?'任意':`任一${EL[t.slice(4)]||'?'}`;
+const condOK=(t,n)=>t==='@any'||elOf(n)===t.slice(4);
+
+/* ============ 可行性：配對與截止期限 ============ */
+// 帶容量的二分配對（Kuhn）：slots[i].ok(c) 判斷角色 c 能否填，cap[c]＝可用次數；回傳每格配到的角色（-1＝配不到）
+function matchSlots(slots,nChars,cap){const asg=new Array(slots.length).fill(-1),use=Array.from({length:nChars},()=>[]);
+ const tryS=(s,seen)=>{for(let c=0;c<nChars;c++){if(seen[c]||!slots[s].ok(c))continue;seen[c]=1;
+  if(use[c].length<cap[c]){use[c].push(s);asg[s]=c;return true}
+  for(let x=0;x<use[c].length;x++){const o=use[c][x];if(tryS(o,seen)){use[c][x]=s;asg[s]=c;return true}}}return false};
+ slots.forEach((_,s)=>tryS(s,new Array(nChars).fill(0)));return asg}
+// 規劃頁：依目前規劃的選入時間，檢查條件格能否配到人；固定格由 sim() 檢查
+function planGaps(sm){const names=Object.keys(sm.rows[0].pre),N=names.length,end=sm.rows.at(-1).after;
+ const cap=names.map(n=>Math.max(0,end[n]??0)),slots=[];
+ sm.rows.forEach(r=>r.p.fight.forEach(t=>{if(isCond(t))slots.push({act:r.a.label,t,ok:c=>r.entry[names[c]]!=null&&condOK(t,names[c])})}));
+ const asg=matchSlots(slots,N,cap),gap={};slots.forEach((s,i)=>{if(asg[i]<0)(gap[s.act]??=[]).push(condText(s.t))});return gap}
+// 截止期限：固定格角色（非開幕）第一次出戰的幕；比較「該幕前需到位人數」與「之前的免費選角次數」
+function deadlines(){const ord=order(),first={};
+ ord.forEach((k,i)=>actPlan(k).fight.forEach(t=>{if(t&&!isCond(t)&&!isOpening(t)&&!(t in first))first[t]=i}));
+ let cum=0;return ord.map((k,i)=>{const due=Object.keys(first).filter(n=>first[n]===i);cum+=due.length;
+  return{k,label:ACT[k].label,due,need:cum,free:i}})}
+
+/* ============ ④ 待辦清單 ============ */
+// 依各幕出戰隊伍，列出「要在第幾幕前找到誰／補幾個人」以及急迫程度
+const URG=[{t:'緊急',c:'u0'},{t:'高',c:'u1'},{t:'中',c:'u2'},{t:'低',c:'u3'}];
+function todoItems(){const ord=order(),sm=sim(),R=rosterNames(),ops=openingNames(),F=S.flower,items=[];
+ const pool0=Math.max(1,R.length-ops.length);   // 開局待命人數
+ const nPick=i=>{const a=ACT[ord[i]];return a.boss||a.arc?3:2};
+ // 第 d 幕前的戰後選人中，至少看到某特定角色一次的機率（每幕選走 1 人，待命池遞減）
+ const pSeen=d=>{let miss=1;for(let j=0;j<d;j++){const n=Math.max(1,pool0-j);miss*=Math.max(0,1-nPick(j)/n)}return 1-miss};
+ // 第 d 幕前至少看到某元素任一角色的機率（該元素待命 m 人）
+ const pSeenEl=(d,m)=>{let miss=1;for(let j=0;j<d;j++){const n=Math.max(1,pool0-j),k=Math.min(nPick(j),n);let q=1;for(let x=0;x<k;x++)q*=Math.max(0,(n-m-x)/(n-x));miss*=q}return 1-miss};
+ const planned={};ord.forEach((k,i)=>{const p=actPlan(k);if(p.pick)planned[p.pick]??=i;p.ev.forEach(e=>{if(e.t==='buy'&&e.n)planned[e.n]??=i;if(e.t==='myst'&&e.n)planned[e.n]??=i})});
+ // ① 指定角色（非開幕）
+ const first={},uses={};ord.forEach((k,i)=>actPlan(k).fight.forEach(t=>{if(!t||isCond(t)||isVirt(t))return;uses[t]=(uses[t]||0)+1;if(!isOpening(t)&&!(t in first))first[t]=i}));
+ const dueOrder=Object.keys(first).sort((x,y)=>first[x]-first[y]);let cum=0;
+ dueOrder.forEach(n=>{const d=first[n];cum++;const slack=d-cum,p=pSeen(d),e=elOf(n);
+  const nEl=R.filter(x=>!isOpening(x)&&elOf(x)===e).length,pInv=Math.min(1,3/Math.max(1,nEl));
+  let u=p<0.3||slack<0?0:p<0.6?1:p<0.85?2:3;const notes=[];
+  if(planned[n]!=null&&planned[n]<d){u=3;notes.push(`規劃中已在${ACT[ord[planned[n]]].label}取得`)}
+  else{notes.push(`戰後選人到期前看到他的機率約 ${Math.round(p*100)}%`);
+   if(slack<0)notes.push(`這之前要到位的人比免費選人次數多 ${-slack} 人，一定要靠邀請`);
+   notes.push(`沒看到就在${ACT[ord[d]].label}事件階段用「邀請・${EL[e]||'?'}」（每次約 ${Math.round(pInv*100)}%，期望 ${Math.round(F.invite/pInv)} 花）`)}
+  if(!R.includes(n))notes.unshift('⚠ 不在參演名單');
+  if((uses[n]||0)>STAMINA)notes.push(`⚠ 出戰 ${uses[n]} 次，超過 ${STAMINA} 點體力，需要回復體力`);
+  items.push({d,u,kind:'角色',what:n,av:n,notes})});
+ // ② 指定元素的條件格：最早需要的幕與總格數（「任意」格併入 ③）
+ const cond={};ord.forEach((k,i)=>actPlan(k).fight.forEach(t=>{if(isCond(t)&&t!=='@any'){(cond[t]??={d:i,n:0}).n++}}));
+ Object.entries(cond).forEach(([t,v])=>{const e=t.slice(4),m=R.filter(x=>!isOpening(x)&&elOf(x)===e).length,p=pSeenEl(v.d,m);
+  items.push({d:v.d,u:p<0.6?1:p<0.85?2:3,kind:'條件格',what:`${condText(t)} ×${v.n} 格`,notes:[`第一次在${ACT[ord[v.d]].label}；戰後選人前看到任一${EL[e]}角色的機率約 ${Math.round(p*100)}%`]})});
+ // ③ 隨意隊友：假設完全不邀請、只靠戰後選人（需要的指定角色依期限優先選到，其餘選到的人可填任何條件格），
+ //    逐幕做配對，找出第一次排不出隊伍的幕＝最晚要邀請隨意隊友的時機；補上一人後繼續往後找
+ inviteAny(ord,first,uses).forEach(x=>items.push({d:x.d,u:0,kind:'補人',what:x.el?`邀請 1 名${EL[x.el]}系隊友（第 ${x.n} 位）`:`邀請 1 名隨意隊友（第 ${x.n} 位）`,
+  notes:[x.found>x.d?`只靠戰後選人，到${ACT[ord[x.found]].label}會排不出隊伍（缺 ${x.short} 格）；因為${ACT[ord[x.d]].label}的條件格要先用掉其他人的體力，所以要提早到這幕`:`只靠戰後選人，到${ACT[ord[x.d]].label}會排不出隊伍（缺 ${x.short} 格）`,x.el?`最晚在${ACT[ord[x.d]].label}事件階段邀請；要能填「任一${EL[x.el]}」，用「邀請・${EL[x.el]}」必定拿到 1 名${EL[x.el]}系（${S.flower.invite} 花）`:`最晚在${ACT[ord[x.d]].label}事件階段邀請；任何人都可以，用「邀請（全元素）」必定拿到 1 人（${S.flower.invite} 花）`]}));
+ return items.sort((x,y)=>x.d-y.d||x.u-y.u)}
+// 推算「隨意隊友」的最晚邀請時機。chars：開幕（第 0 幕起）、指定角色（依期限分配到之前的戰後選人，不夠的在期限幕邀請）、
+// 其餘戰後選人（通用角色，可填任何條件格）。每人 2 點體力；逐幕配對，缺格時在該幕補 1 名通用角色。
+function inviteAny(ord,first,uses){const A=ord.length,chars=[];
+ openingNames().forEach(n=>chars.push({n,from:0}));
+ const picks=[...Array(A-1).keys()].map(j=>({from:j+1,used:false}));  // 第 j 幕戰後選的人，第 j+1 幕起可用
+ Object.keys(first).sort((x,y)=>first[x]-first[y]).forEach(n=>{const pk=picks.find(p=>!p.used&&p.from<=first[n]);
+  if(pk){pk.used=true;chars.push({n,from:pk.from})}else chars.push({n,from:first[n]})});
+ picks.filter(p=>!p.used).forEach(p=>chars.push({n:null,from:p.from}));
+ const out=[];let added=0;
+ for(let k=0;k<A;k++){
+  for(let guard=0;guard<8;guard++){const slots=[],seen={};
+   // 指定角色超過 2 次或不在名單的格子，補隨意隊友也解決不了，不列入（角色那列已另外提醒）
+   for(let i=0;i<=k;i++)actPlan(ord[i]).fight.forEach(t=>{if(!t)return;if(!isCond(t)){seen[t]=(seen[t]||0)+1;if(seen[t]>STAMINA||!chars.some(ch=>ch.n===t))return}
+    slots.push({i,ok:c=>{const ch=chars[c];if(ch.from>i)return false;if(!isCond(t))return ch.n===t;if(ch.n===null)return ch.el==null||t==='@any'||ch.el===t.slice(4);return condOK(t,ch.n)}})});
+   const missOf=()=>matchSlots(slots,chars.length,chars.map(()=>STAMINA)).filter(x=>x<0).length,miss=missOf();
+   if(!miss)break;
+   // 缺格可能是更早的幕把體力用掉造成的：從第 k 幕往前找「補一人能減少缺格」的最晚時機
+   let at=-1;for(let f=k;f>=0;f--){chars.push({n:null,from:f});const m=missOf();chars.pop();if(m<miss){at=f;break}}
+   if(at<0)break; // 補隨意隊友解決不了（例如指定角色本身的問題）
+   // 補的人要不要指定元素：先試「只能填任意格的人」，不行再試各元素
+   let el=null;chars.push({n:null,from:at,el:'-'});const anyOk=missOf()<miss;chars.pop();
+   if(!anyOk)for(const e of Object.keys(EL)){chars.push({n:null,from:at,el:e});const ok=missOf()<miss;chars.pop();if(ok){el=e;break}}
+   chars.push({n:null,from:at,el:el||undefined});added++;out.push({d:at,n:added,short:miss,found:k,el})}}
+ return out}
+function rTodo(){const ord=order(),items=todoItems();let h='',cur=-1;
+ items.forEach(it=>{if(it.d!==cur){cur=it.d;h+=`<tr class="grp"><td colspan="4">${ACT[ord[cur]].label} 之前</td></tr>`}
+  h+=`<tr><td><span class="urg ${URG[it.u].c}">${URG[it.u].t}</span></td><td class="mut">${it.kind}</td>
+   <td>${it.av?`<span class="chip">${avatar(it.av)}${esc(it.what)}</span>`:esc(it.what)}</td><td>${it.notes.map(esc).join('<br>')}</td></tr>`});
+ $('#tab-todo').innerHTML=`<div class="card"><h3>④ 待辦清單</h3>
+  <div class="mut">依「③ 規劃」各幕的出戰隊伍，按時間順序列出要找的人與要補的隊友。急迫度依「到期前靠戰後選人看到的機率」估算：<span class="urg u0">緊急</span> 一定要邀請、<span class="urg u1">高</span> 不到 60%、<span class="urg u2">中</span> 不到 85%、<span class="urg u3">低</span>。</div>
+  ${items.length?`<table class="todo"><tr><th>急迫<th>類型<th>項目<th>說明</tr>${h}</table>`:'<p class="mut">規劃中沒有需要額外取得的角色或祝福。先到「③ 規劃」填出戰隊伍。</p>'}</div>`}
+
+// 查看／選定「任意」選入的實際人選；選定後改成該角色，但保留原本的條件（pickFrom／from）
+function genRef(k,kind,j){const p=actPlan(k);return kind==='pick'?{get:()=>p.pick,from:()=>p.pickFrom,set:(n,f)=>{p.pick=n;f?p.pickFrom=f:delete p.pickFrom}}
+ :{get:()=>p.ev[j]?.n,from:()=>p.ev[j]?.from,set:(n,f)=>{const e=p.ev[j];e.n=n;f?e.from=f:delete e.from}}}
+function openGenPool(k,kind,j){const g=sim().rows.find(r=>r.a.k===k)?.gen.find(x=>x.kind===kind&&(kind==='pick'||x.j===j));if(!g)return toast('找不到這筆任意選入');
+ const ref=genRef(k,kind,j),pool=[...g.pool],tok=g.tok;
+ openPicker({title:`${ACT[k].label}・${g.lbl}：可能選到的人（${effText(g)} 人）`,cons:true,single:1,names:()=>pool,sel:n=>g.chosen===n,
+  // 點已選定的角色＝改回原本的「任意」條件
+  toggle:n=>{g.chosen===n?ref.set(tok):ref.set(n,tok);markEdit(k)},
+  top:()=>g.prior?.length?`<div class="elgrp"><div class="eh">可能被前面的條件選入拿走（不知道是誰）</div><div class="avs">${g.prior.map(x=>`<div class="av condcell"><div class="avimg"><div class="condimg">?</div></div><div class="nm" title="${esc(VIRT[x]?.label||'')}">${esc((VIRT[x]?.label||'').replace(/（|）/g,' '))}之一</div></div>`).join('')}</div></div>`:'',
+  note:`此時還在待命、規劃中沒有另外指名的${tok==='@any'?'':EL[tok.slice(4)]+'系'}角色共 ${pool.length} 人${g.prior?.length?`。前面有 ${g.prior.length} 個條件選入可能拿走其中的人：最壞情況全拿這裡的人，剩 ${g.effMin} 人；最好情況盡量拿別處的人，剩 ${g.effMax} 人`:''}。點頭像＝確定就是他（仍保留「${condText(tok)}」標記）；再點一次已選的角色＝改回「${condText(tok)}」。`})}
+// 重置所有從「任意／任一某元素」選定成具體角色的選入（戰後選入、邀請、神秘收穫），改回原本的條件
+const anyResolved=()=>order().flatMap(k=>{const p=actPlan(k);return[...(p.pickFrom?[[k,'pick',null]]:[]),...p.ev.map((e,j)=>e.from?[k,'ev',j]:null).filter(Boolean)]});
+const resetAnyBtn=()=>`<button class="resetany" ${anyResolved().length?'':'disabled'}>重置所有任意選定（${anyResolved().length}）</button>`;
+function bindResetAny(){document.querySelectorAll('.resetany').forEach(b=>b.onclick=()=>{const ks=anyResolved();if(!ks.length)return;
+ histLabel='重置所有任意選定';ks.forEach(([k,kind,j])=>{const r=genRef(k,kind,j);r.set(r.from());markEdit(k)});closeModal();toast(`已把 ${ks.length} 個選定改回任意`)})}
+// 選人視窗裡的條件格（與頭像同大小）
+function condCell(t){return`<div class="av condcell" data-addc="${t}" title="${condText(t)}：點一下加入"><div class="avimg"><div class="condimg">${t==='@any'?'✱':dot(t.slice(4))}</div><span class="cbadge"></span></div><div class="nm">${condText(t)}</div></div>`}
+// 規劃頁的可行性摘要
+function feasCard(sm){const gap=planGaps(sm),dl=deadlines(),due=dl.filter(d=>d.due.length);
+ return`<details class="stp"><summary>可行性分析：條件格缺口 ${Object.values(gap).flat().length} 格・需選入的固定角色 ${dl.at(-1)?.need||0} 名</summary>
+  ${Object.keys(gap).length?`<h4>條件格配不到人（依目前規劃的選入時間）</h4>${Object.entries(gap).map(([a,l])=>`<div class="warn">${a}：${l.join('、')}</div>`).join('')}`:'<div class="ok">條件格都能配到人</div>'}
+  <h4>截止期限（固定格角色第一次出戰的幕）</h4>${due.length?`<table><tr><th>幕<th>需到位<th class="n">累計需要<th class="n">之前的免費選角<th class="n">至少邀請</tr>
+  ${due.map(d=>`<tr><td>${d.label}<td>${d.due.map(esc).join('、')}<td class="n">${d.need}<td class="n">${d.free}<td class="n ${d.need>d.free?'warn':''}">${Math.max(0,d.need-d.free)}</tr>`).join('')}</table>
+  <div class="mut">免費選角每幕 1 次但候選隨機，不保證選得到；不足的部分要靠邀請或神秘收穫。</div>`:'<div class="mut">沒有需要另外選入的固定角色。</div>'}</details>`}
+
+/* ============ 角色池頁 ============ */
+// 持有：沒被匯入清單標成未持有，或目前是助演（借來的角色視為持有）
+const owned=n=>n===S.support||poolBy(n)?.own!==false;
+// 回傳不能切換的原因；可以則直接切換
+function toggleRoster(n){
+ if(S.locked)return'參演名單已確定，請先按「解除確定」';
+ if(isOpening(n))return'開幕角色固定參演，不能取消';
+ if(n===S.support)return'助演固定參演，要更換或取消請用上方「助演」區的按鈕';
+ const c=poolBy(n);if(!c)return'';
+ if(!c.in&&rosterFull())return`參演已達上限 ${ROSTER_MAX} 名（含開幕與助演），請先取消其他角色`;
+ c.in=!c.in}
+// 等級不足：持有但未滿 70 級（試用固定 90、助演為好友角色不檢查）
+const lowLv=n=>!isTrial(n)&&n!==S.support&&owned(n)&&levelOf(n)<70;
+const lowRoster=()=>rosterNames().filter(lowLv);
+function poolHead(){const R=rosterNames(),n=R.length,ops=openingNames(),self=R.length-ops.length,ex=extraCount(),low=lowRoster(),ok=rosterOK(n)&&!low.length;
+ return`<div class="row"><h3 style="margin:0">參演名單：<span class="${rosterOK(n)?'ok':'warn'}">${n}</span> / ${ROSTER_MIN}~${ROSTER_MAX}</h3>
+  <span class="mut">＝ 開幕 ${ops.length} ＋ 自選 ${self}（含助演；自選上限 ${ROSTER_MAX-ops.length}）</span>
+  <span style="flex:1"></span>
+  ${S.locked?`<span class="ok">🔒 已鎖定</span><button id="unlock">解除鎖定</button>`:`<button id="lockonly" ${ok?'':'disabled'}>鎖定名單</button>`}
+  <button class="pri" id="lock" ${ok||S.locked?'':'disabled'}>確定參演名單</button></div>
+  ${low.length?`<div class="warn">⚠ 參演角色未滿 70 級，請先調整等級：${low.map(esc).join('、')}</div>`:''}
+  <div class="mut">額外 ${ex} 名 → 開局幻劇之花 +${ex*S.flower.perExtra}、祝福等級加成 +${ex*2}${rosterFull()?'　<span class="warn">已達上限，其他角色無法再選</span>':''}</div>`}
+function bindHead(){
+ // 鎖定名單：只鎖定留在本頁；確定參演名單：鎖定並前往規劃
+ $('#lockonly')&&($('#lockonly').onclick=()=>{S.locked=true;rerender()});
+ $('#lock')&&($('#lock').onclick=()=>{S.locked=true;save();show('plan')});
+ $('#unlock')&&($('#unlock').onclick=()=>{S.locked=false;rerender()})}
+// 原地更新卡片狀態（不重繪，避免畫面抖動）
+const inRoster=n=>isOpening(n)||n===S.support||!!poolBy(n)?.in;
+// 批次操作（勾選當期可用／全不選／匯入 JSON）的復原紀錄，只存在本次開啟期間
+function pushUndo(label){histLabel=label}
+function paintPool(){const full=rosterFull();
+ const g={};S.pool.forEach(c=>{const e=elOf(c.name)||'other';(g[e]??={n:0,t:0}).t++;if(inRoster(c.name))g[e].n++});
+ $('#tab-pool').querySelectorAll('[data-eg]').forEach(x=>{const v=g[x.dataset.eg];if(v)x.textContent=`${v.n}/${v.t}`});
+ $('#tab-pool').querySelectorAll('[data-tg]').forEach(d=>{const n=d.dataset.tg,c=poolBy(n),on=isOpening(n)||n===S.support||c?.in;
+  const own=owned(n)||isTrial(n);d.classList.toggle('sel',!!on);d.classList.toggle('dis',!on&&(full||S.locked));d.classList.toggle('unown',!own);d.classList.toggle('low',lowLv(n));d.classList.toggle('lk',S.locked||isOpening(n)||n===S.support);
+  const t=d.querySelector('.tg');if(t)t.textContent=tag(n)});
+ $('#phead').innerHTML=poolHead();bindHead();save()}
+function rPool(){
+ const ops=openingNames();
+ $('#tab-pool').innerHTML=`<div class="card" id="phead"></div>
+ <div class="card"><h3>開幕角色（固定 6 人，自動參演）</h3>
+  ${ops.length?`<div class="avs">${ops.map(o=>{const c=openingCfg(o);return avCell(o,{sel:true,extra:`<div><select data-om="${esc(o)}" ${S.locked?'disabled':''}>
+   <option value="trial" ${c.mode==='trial'?'selected':''}>試用</option><option value="own" ${c.mode==='own'?'selected':''}>自帶</option></select></div>`})}).join('')}</div>
+   <div class="mut">試用固定 90 級、C0；自帶的等級與命座在下方角色池調整。</div>`
+   :'<p class="mut">尚未載入當期資料，沒有開幕角色（到「當期資料」載入；不載入也能用，參演全部由自選組成）。</p>'}</div>
+ <div class="card"><div class="row"><h3 style="margin:0">助演（佔 1 個自選名額）</h3>
+  <button id="supb" ${S.locked?'disabled':''}>選擇助演</button>${S.support?`<button id="supx" ${S.locked?'disabled':''}>取消助演</button>`:''}</div>
+  ${S.support?`<div class="avs">${avCell(S.support,{sel:true})}</div>`:'<p class="mut">未選</p>'}
+  <div class="mut">助演可以是自己沒有的角色（借好友的），等同自帶角色，只是多一個「助演」標籤；名單已滿時不能再選助演。</div></div>
+ <div class="card"><h3>編輯角色池</h3><div class="row">
+  <button class="pri" id="pfill">恢復圖鑑（補回所有角色）</button><button id="prm">移除角色…</button></div>
+  <h4>新增圖鑑沒有的角色</h4><div class="row">
+  <label class="upl" title="上傳頭像">${newImg?`<img src="${newImg}" alt="">`:'＋頭像'}<input type="file" id="pimg" accept="image/*" hidden></label>
+  <input id="pn" placeholder="名稱" size="10">
+  <select id="pe">${Object.entries(EL).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+  <select id="pr"><option value="5">5★</option><option value="4">4★</option></select>
+  <button id="padd">新增</button></div>
+  <div class="mut">「恢復圖鑑」只會補回內建圖鑑的角色；自己新增的角色移除後要重新新增。</div></div>
+ <div class="card"><h3>匯入／匯出角色池（JSON）</h3>
+  <div class="row"><button class="pri" id="rimp">匯入 JSON</button><input type="file" id="rimpf" accept=".json,application/json" hidden>
+   <span class="mut">檔案中沒有的角色會在右上角標 ✕（未持有）；仍可手動選入，選為助演時視為持有。可用「復原」還原。</span></div>
+  <div class="row" style="margin-top:6px"><button id="rexp">匯出目前角色池</button><button id="rsample">下載範例檔</button></div>
+  <details style="margin-top:6px"><summary class="mut">格式說明</summary><pre class="code">${esc(ROSTER_SAMPLE)}</pre>
+  <div class="mut">每個角色用 name（繁中名）或 id（角色 ID）指定；cons＝命座 0~6，lv＝等級（省略為 90）。圖鑑沒有的角色可加 el（pyro/hydro/electro/cryo/anemo/geo/dendro）與 r（4 或 5）。也可以直接給角色陣列。</div>
+  <details style="margin-top:6px"><summary class="mut">角色名稱索引（${Object.keys(DB).length} 名，名稱／ID）</summary><div class="nameidx">${nameIndex()}</div></details></details>
+  <div id="imsg" class="mut"></div></div>
+ <div class="card"><div class="row"><h3 style="margin:0">我的角色池（點角色＝勾選參演）</h3>
+  <span style="flex:1"></span><button id="selok">勾選當期可用（至上限）</button><button id="clr">全不選</button><button id="preset">重置角色池</button><button class="undobtn" id="pundo">↶ 上一步</button></div>
+  <div class="mut">選入參演後才會出現 Lv（等級）、C（命座）欄位。非當期元素會變淡，右上 ✕＝未持有。</div>
+  ${elGroups(S.pool.map(c=>c.name),name=>{const c=poolBy(name),i=S.pool.indexOf(c);
+   return`<div class="av pc r${c.r||4} ${allowed(name)?'':'dim'}" data-tg="${esc(name)}">
+    ${avatar(name)}<div class="nm">${esc(name)}</div><div class="tg"></div>
+    <span class="unx" title="未持有（依匯入的角色清單）">✕</span><span class="lowx" title="未滿 70 級">−</span>
+    ${isTrial(name)?`<div class="noclick lc" title="開幕試用固定 90 級 C0"><span>Lv</span><input type="number" value="90" disabled><span>C</span><input type="number" value="0" disabled></div>`
+     :`<div class="noclick lc"><span>Lv</span><input type="number" data-pl="${i}" value="${c.lv||''}" min="1" max="100"><span>C</span><input type="number" data-pc="${i}" value="${c.cons||0}" min="0" max="6"></div>`}</div>`},inRoster)||'<p class="mut">尚未新增角色</p>'}</div>`;
+ paintPool();
+ const T=$('#tab-pool');
+ T.querySelectorAll('[data-tg]').forEach(d=>d.onclick=e=>{if(e.target.closest('.noclick'))return;const m=toggleRoster(d.dataset.tg);if(m)toast(m);else paintPool()});
+ T.querySelectorAll('[data-om]').forEach(s=>s.onchange=()=>{const n=s.dataset.om;openingCfg(n).mode=s.value;if(s.value==='own')addChar(n);rerender()});
+ $('#supx')&&($('#supx').onclick=()=>{if(S.locked)return toast('參演名單已確定，請先解除');S.support='';rerender()});
+ $('#supb').onclick=()=>openPicker({title:'選擇助演（單選）',names:()=>Object.keys(DB).filter(n=>!isOpening(n)),sel:n=>S.support===n,
+  block:n=>{const R=rosterNames();return R.includes(n)?`「${n}」已在參演名單（自帶），不需當助演`:(!S.support&&R.length>=ROSTER_MAX)?`參演已達上限 ${ROSTER_MAX} 名，請先取消 1 名自選角色才能選助演`:''},
+  toggle:n=>{S.support=S.support===n?'':n},dim:n=>!allowed(n),note:'可選任何角色（不必擁有）；助演佔 1 個參演名額。'});
+ $('#pfill').onclick=()=>{const n0=S.pool.length;Object.keys(DB).forEach(n=>addChar(n));rerender();toast(`補回 ${S.pool.length-n0} 名`)};
+ $('#prm').onclick=()=>{const marks=[];
+  openPicker({title:'移除角色（點選要移除的角色）',names:()=>S.pool.map(c=>c.name),sel:n=>marks.includes(n),
+   toggle:n=>{const i=marks.indexOf(n);i>=0?marks.splice(i,1):marks.push(n)},
+   block:n=>S.locked&&rosterNames().includes(n)?'參演名單已確定，請先解除才能移除參演角色':isOpening(n)&&!isTrial(n)?'開幕自帶角色不能移除（可先改成試用）':'',
+   head:()=>`<div class="mut">已選 <b id="fcnt">${marks.length}</b> 名；按「完成」後移除。</div>`,
+   onClose:()=>{if(!marks.length)return;if(!confirm(`確定從角色池移除 ${marks.length} 名角色？`))return;
+    S.pool=S.pool.filter(c=>!marks.includes(c.name));toast(`已移除 ${marks.length} 名`)}})};
+ $('#pimg').onchange=async e=>{const f=e.target.files[0];if(!f)return;newImg=await shrinkImg(f);rPoolKeep()};
+ $('#padd').onclick=()=>{const n=$('#pn').value.trim();if(!n)return toast('請輸入名稱');if(poolBy(n))return toast(`「${n}」已在角色池`);
+  addChar(n,$('#pe').value,+$('#pr').value);if(newImg){poolBy(n).img=newImg;newImg=''}rerender()};
+ T.querySelectorAll('[data-pl]').forEach(x=>x.onchange=()=>{S.pool[x.dataset.pl].lv=Math.max(1,Math.min(100,+x.value||1));x.value=S.pool[x.dataset.pl].lv;paintPool()});
+ T.querySelectorAll('[data-pc]').forEach(x=>x.onchange=()=>{S.pool[x.dataset.pc].cons=+x.value;save()});
+ $('#selok').onclick=()=>{if(S.locked)return toast('參演名單已確定，請先解除');pushUndo('勾選當期可用');
+  S.pool.filter(c=>!c.in&&c.own!==false&&!lowLv(c.name)&&allowed(c.name)&&!isOpening(c.name)&&c.name!==S.support).sort((a,b)=>(b.lv||0)-(a.lv||0)).forEach(c=>{if(!rosterFull())c.in=true});paintPool()};
+ $('#clr').onclick=()=>{if(S.locked)return toast('參演名單已確定，請先解除');pushUndo('全不選');S.pool.forEach(c=>c.in=false);paintPool()};
+ // 重置：回到全新狀態（全部圖鑑角色、持有、90 級 C0、未參演；清掉助演、開幕自帶設定與自訂角色）
+ $('#preset').onclick=()=>{if(S.locked)return toast('參演名單已確定，請先解除');pushUndo('重置角色池');
+  S.pool=[];Object.keys(DB).forEach(n=>addChar(n));S.support='';S.opening={};newImg='';$('#imsg')&&($('#imsg').textContent='');rerender();toast('已重置角色池，可按「復原」還原')};
+ $('#pundo').onclick=undo;
+ $('#rimp').onclick=()=>$('#rimpf').click();
+ $('#rimpf').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{importRoster(JSON.parse(await f.text()))}catch(err){toast('JSON 格式錯誤：'+err.message)}e.target.value=''};
+ $('#rexp').onclick=()=>download('theatar-roster.json',JSON.stringify(exportRoster(),null,1));
+ $('#rsample').onclick=()=>download('theatar-roster-sample.json',ROSTER_SAMPLE);
+}
+// 自訂角色頭像：裁成正方形縮到 128×128 存成 dataURL
+let newImg='';
+function shrinkImg(file){return new Promise((ok,no)=>{const r=new FileReader();r.onerror=no;r.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{
+ const c=document.createElement('canvas'),z=128;c.width=c.height=z;const k=Math.min(im.width,im.height);
+ c.getContext('2d').drawImage(im,(im.width-k)/2,(im.height-k)/2,k,k,0,0,z,z);ok(c.toDataURL('image/png'))};im.src=r.result};r.readAsDataURL(file)})}
+// 保留已輸入的新增欄位重繪
+function rPoolKeep(){const v={n:$('#pn').value,e:$('#pe').value,r:$('#pr').value};rerender();$('#pn').value=v.n;$('#pe').value=v.e;$('#pr').value=v.r}
+// 新加入角色池預設不參演（由玩家點選）
+function addChar(name,el='pyro',r=4,lv=90,cons=0){if(!name||poolBy(name))return;const d=DB[name];
+ S.pool.push({name,el:d?.el||el,r:d?.r||r,icon:d?.icon,lv:lv||90,cons:cons||0,in:false})}
+
+/* --- 角色池 JSON 匯入／匯出 --- */
+const ROSTER_SAMPLE=JSON.stringify({format:'theatar-roster/1',characters:[
+ {name:'甘雨',cons:2,lv:90},{name:'那維萊特',cons:0},{id:10000063,cons:1,lv:80},{name:'自訂角色範例',el:'geo',r:4,cons:6}]},null,1);
+function download(name,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;a.click()}
+function nameIndex(){const g={};Object.values(DB).forEach(c=>(g[c.el]??=[]).push(c));
+ return Object.keys(EL).filter(e=>g[e]).map(e=>`<div>${dot(e)}<b>${EL[e]}</b>：${g[e].map(c=>`${esc(c.name)}<span class="mut">(${c.id})</span>`).join('、')}</div>`).join('')}
+function exportRoster(){return{format:'theatar-roster/1',characters:S.pool.filter(c=>c.own!==false).map(c=>{const o={name:c.name,cons:c.cons||0,lv:c.lv||90};if(!DB[c.name])Object.assign(o,{el:c.el,r:c.r});return o})}}
+function importRoster(j){
+ const list=Array.isArray(j)?j:j?.characters;if(!Array.isArray(list))throw new Error('找不到 characters 陣列');
+ pushUndo('匯入 JSON');
+ const seen=new Set(),skip=[];let add=0,upd=0;
+ list.forEach(x=>{const name=x.name||BY_ID[x.id]?.name;if(!name){skip.push(x.name||x.id||'?');return}
+  if(!DB[name]&&!poolBy(name)&&!(x.el in EL)){skip.push(name);return}
+  const cons=Math.max(0,Math.min(6,+x.cons||0)),lv=Math.max(1,Math.min(100,+x.lv||90));
+  const c=poolBy(name);if(c){Object.assign(c,{cons,lv,own:true});upd++}else{addChar(name,x.el,+x.r||4,lv,cons);add++}seen.add(name)});
+ // 檔案中沒有的角色：標為未持有、取消參演；開幕自帶改回試用
+ // 參演名單已鎖定時不動名單，只更新持有狀態，並列出參演中但檔案裡沒有的人
+ let off=0,toTrial=[],keep=[];S.pool.forEach(c=>{if(seen.has(c.name))return;if(c.own!==false)off++;c.own=false;
+  if(S.locked){if(c.in)keep.push(c.name);return}
+  c.in=false;if(isOpening(c.name)&&!isTrial(c.name)){openingCfg(c.name).mode='trial';toTrial.push(c.name)}});
+ rerender();$('#imsg').textContent=`匯入完成：新增 ${add}、更新 ${upd}、標為未持有 ${off}${toTrial.length?`；開幕角色改回試用：${toTrial.join('、')}`:''}${keep.length?`；名單已鎖定，保留參演但檔案裡沒有：${keep.join('、')}`:''}${skip.length?`；略過 ${skip.length} 筆（不認得的角色：${skip.slice(0,8).join('、')}${skip.length>8?'…':''}）`:''}`;
+ toast('角色池匯入完成')}
+
+/* ============ 當期資料頁 ============ */
+// 可選角色：內建圖鑑＋自訂角色
+const allChars=()=>[...new Set([...Object.keys(DB),...S.pool.map(c=>c.name)])];
+function elemCheck(e){const main=e.filter(x=>['pyro','hydro','electro','cryo'].includes(x)).length,sub=e.length-main,w=[];
+ if(e.length!==3)w.push(`需選 3 種元素（目前 ${e.length}）`);if(main<2)w.push('火水雷冰至少 2 種');if(sub>1)w.push('風岩草至多 1 種');return w}
+// 當期資料可留空；有填就要完整（3 種元素、6 名開幕、特邀 0 或 4 名）
+function seasonIssues(){const se=S.season,w=[];
+ if(se.elements.length)w.push(...elemCheck(se.elements));
+ if(se.opening.length&&se.opening.length!==6)w.push(`開幕角色應為 6 名（目前 ${se.opening.length}）`);
+ if(se.elements.length&&!se.opening.length)w.push('尚未選開幕角色');
+ if(se.guests.length&&se.guests.length!==4)w.push(`特邀角色應為 4 名（目前 ${se.guests.length}）`);return w}
+function rSeason(){const se=S.season,ew=elemCheck(se.elements),L=S.seasonLocked,D=L?'disabled':'',iss=seasonIssues();
+ const F=S.flower,inp=(k,l)=>`<label>${l} <input type="number" data-fk="${k}" value="${F[k]}" style="width:64px"></label>`;
+ const chips=l=>l.map(n=>`<span class="chip">${avatar(n)}${esc(n)}</span>`).join('')||'<span class="mut">未選</span>';
+ $('#tab-season').innerHTML=`<div class="card ${L?'done':''}"><div class="row"><h3 style="margin:0">當期資料（可手動編輯，也可留空）</h3><span style="flex:1"></span>
+  ${L?`<span class="ok">✔ 已確定</span><button id="sunlock">解除確定</button>`:`<button class="pri" id="slock" ${iss.length?'disabled':''}>確定當期資料</button>`}</div>
+  ${iss.map(w=>`<div class="warn">⚠ ${w}</div>`).join('')}
+  ${L?'<div class="mut">已確定，要修改請先解除確定（會一併解除參演名單的確定）。</div>':'<div class="mut">確定後才能編輯角色池；不填任何資料也可以直接確定。</div>'}
+  <div class="row" style="margin-top:6px"><label>難度 <select id="smode" ${D}>${Object.entries(MODES).map(([k,m])=>`<option value="${k}" ${(S.mode||'luna')===k?'selected':''}>${m.label}（${m.min}~${m.max} 人${m.arc?'，含圣牌挑戰':'，沒有圣牌挑戰'}）</option>`).join('')}</select></label>
+   <label>名稱 <input id="sname" value="${esc(se.name)}" size="28" placeholder="例：2026-10 月諭" ${D}></label></div>
+  <h4>開放元素（3 種）</h4><div class="row">${Object.entries(EL).map(([k,v])=>`<button class="elbtn ${se.elements.includes(k)?'on':''}" data-el="${k}" ${D}>${dot(k)} ${v}</button>`).join('')}</div>
+
+  <h4>開幕角色（6 名） <button class="sm" id="sopen" ${D}>選擇</button></h4><div>${chips(se.opening)}</div>
+
+  <h4>特邀角色（4 名） <button class="sm" id="sguest" ${D}>選擇</button></h4><div>${chips(se.guests)}</div>
+  <div class="row" style="margin-top:10px"><button id="ss" ${D}>載入範例（Season 28 草稿）</button><button id="sc" ${D}>清空</button></div></div>
+ <div class="card linkw"><h3>查詢當期怪物資訊</h3><div class="row">
+  <a href="https://wiki.biligame.com/ys/%E5%B9%BB%E6%83%B3%E7%9C%9F%E5%A2%83%E5%89%A7%E8%AF%97" target="_blank">BWIKI</a>
+  <a href="https://game8.co/games/Genshin-Impact/archives/459958" target="_blank">Game8</a>
+  <a href="https://genshin-impact.fandom.com/wiki/Imaginarium_Theater/Seasons" target="_blank">Fandom</a></div>
+  <div class="mut">怪物資訊可整理成下方 JSON 的 acts 欄位貼回來（或請 Claude 代為整理）。</div></div>
+ <details class="card"><summary><b>進階：JSON 匯入／匯出</b></summary>
+  <div class="mut">格式：<code>{name, elements:["hydro",…], opening:[名稱…], guests:[名稱…], acts:{a3:{name:"首領名"},a4:{variants:{a:"敵人A",b:"敵人B",c:"精英C"}},a5:{name:["敵人A","敵人B"]},…}}</code>；
+  首領幕與圣牌挑戰用 name；普通幕用 variants 指定 A/B/C（或用 name 陣列依序填入 A、B、C；name 是單一字串時只當作 A）。同一波裡有好幾種敵人時寫在同一個名稱裡（例：「無盡波次：甲、乙」），不要拆開；
+  act 鍵：a1~a10、c1、c2。元素：${Object.entries(EL).map(([k,v])=>k+'='+v).join('、')}。</div>
+  <textarea id="sj">${esc(JSON.stringify(se,null,1))}</textarea>
+  <div class="row"><button class="pri" id="sa" ${D}>套用 JSON</button></div><div id="sm"></div></details>
+ <details class="card"><summary><b>進階：幻劇之花數值</b></summary><div class="row" style="margin-top:6px">
+  ${inp('base','初始')}${inp('perExtra','每名額外角色 +')}${inp('battle','一般敵人(A/B)獎勵')}${inp('elite','精英敵人(C)獎勵')}${inp('boss','首領幕獎勵')}${inp('arc','圣牌挑戰獎勵')}
+  ${inp('invite','邀請角色花費')}${inp('grand','盛邀花費')}${inp('bless','祝福每級花費')}<button id="frst">還原預設</button></div>
+  <div class="mut" style="margin-top:4px">預設值取自攻略的近似值，請依遊戲內修正。</div></details>`;
+ $('#slock')&&($('#slock').onclick=()=>{S.seasonLocked=true;save();show('pool')});
+ $('#sunlock')&&($('#sunlock').onclick=()=>{S.seasonLocked=false;S.locked=false;rerender()});
+ document.querySelectorAll('[data-fk]').forEach(i=>i.onchange=()=>{S.flower[i.dataset.fk]=+i.value||0;rerender()});
+ $('#frst').onclick=()=>{S.flower={...DEFAULT_FLOWER};rerender()};
+ $('#sname').onchange=e=>{se.name=e.target.value;save()};
+ $('#smode').onchange=e=>{histLabel='切換難度';S.mode=e.target.value;rerender();toast(`已切換為${modeOf().label}模式（${ROSTER_MIN}~${ROSTER_MAX} 人）`)};
+ document.querySelectorAll('[data-el]').forEach(b=>b.onclick=()=>{const k=b.dataset.el,l=se.elements,i=l.indexOf(k);
+  if(i>=0)l.splice(i,1);else{if(l.length>=3)return toast('最多 3 種元素，請先取消一種');l.push(k)}rerender()});
+ $('#sopen').onclick=()=>{const l=se.opening;openPicker({title:'選擇開幕角色（6 名）',names:allChars,sel:n=>l.includes(n),
+  toggle:n=>{const i=l.indexOf(n);i>=0?l.splice(i,1):l.push(n)},block:()=>l.length>=6?'已選滿 6 名':'',
+  dim:n=>se.elements.length&&!se.elements.includes(elOf(n)),head:()=>`<div class="mut">已選 <b id="fcnt">${l.length}</b>/6；每個開放元素各 1 名 5★ 與 1 名 4★。淡化＝非開放元素。</div>`})};
+ $('#sguest').onclick=()=>{const l=se.guests;openPicker({title:'選擇特邀角色（4 名）',names:allChars,sel:n=>l.includes(n),
+  toggle:n=>{const i=l.indexOf(n);i>=0?l.splice(i,1):l.push(n)},block:()=>l.length>=4?'已選滿 4 名':'',
+  dim:n=>se.elements.includes(elOf(n)),head:()=>`<div class="mut">已選 <b id="fcnt">${l.length}</b>/4；特邀角色不受元素限制，通常是非開放元素。淡化＝開放元素。</div>`})};
+ $('#sa').onclick=()=>{try{const j=JSON.parse($('#sj').value);S.season=Object.assign(blank().season,j);rerender()}catch(e){$('#sm').textContent='JSON 錯誤：'+e.message}};
+ $('#ss').onclick=()=>{if(S.locked&&!confirm('參演名單已確定，載入範例會改變開幕角色，確定嗎？'))return;S.season=JSON.parse(JSON.stringify(SAMPLE_SEASON));rerender()};
+ $('#sc').onclick=()=>{if(!confirm('清空當期資料？'))return;S.season=blank().season;rerender()};
+}
+
+/* ============ 匯出 / 匯入 ============ */
+const stamp=()=>{const d=new Date(),z=n=>String(n).padStart(2,'0');return`${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}`};
+const fileBase=()=>(S.season.name||'theatar-plan').replace(/[\/:*?"<>|]/g,'_').slice(0,40);
+// 輸入名稱的小視窗
+function askName(title,def,cb,okText='確定'){$('#mbox').innerHTML=`<h3>${esc(title)}</h3><div class="row"><input id="fname" value="${esc(def)}" style="flex:1;min-width:220px"></div>
+ <div class="row" style="margin-top:10px"><span style="flex:1"></span><button id="mcancel">取消</button><button class="pri" id="mok">${okText}</button></div>`;
+ const i=$('#fname'),ok=()=>{const v=i.value.trim();if(!v)return toast('請輸入名稱');closeModal();cb(v)};
+ $('#mok').onclick=ok;$('#mcancel').onclick=closeModal;i.onkeydown=e=>{if(e.key==='Enter')ok()};$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};showModal();i.focus();i.select()}
+const downloadJSON=(name,text)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=/\.json$/i.test(name)?name:name+'.json';a.click()};
+// 匯出：預設檔名優先用匯入（或上次匯出）時的檔名，沒有才用「當期名稱-日期時間」
+$('#exp').onclick=()=>askName('匯出全部：檔名',S.fileName?S.fileName+'.json':`${fileBase()}-${stamp()}.json`,n=>{S.fileName=n.replace(/\.json$/i,'');save();downloadJSON(n,JSON.stringify(S,null,1))},'下載');
+$('#imp').onclick=()=>$('#impf').click();
+$('#impf').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ try{const j=JSON.parse(await f.text());if(!j.v)throw 0;histLabel='匯入 '+f.name;S=fix(j);S.fileName=f.name.replace(/\.json$/i,'');save();
+  show(!S.seasonLocked?'season':!S.locked?'pool':'plan');toast(`已匯入「${f.name}」，可按上一步還原`)}catch{alert('檔案格式不正確')}};
+
+show(!S.seasonLocked?'season':!S.locked?'pool':'plan');
+$('#lang').value=LANG;setLang(LANG);
+$('#wsbtn').onclick=openWorkspaces;paintWs();
+$('#lang').onchange=e=>{setLang(e.target.value);rerender()};
+</script>
+</body>
+</html>
