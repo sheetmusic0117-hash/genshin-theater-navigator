@@ -676,7 +676,8 @@ function rPlan(){
   const tiles=[...(S.season.elements.length?S.season.elements:Object.keys(EL)).map(e=>`<div class="sq" data-addbuy="${k}|el|${e}"><div class="sqi">${dot(e)}</div><div class="sqt">邀請・${EL[e]}</div><div class="sqs">3 選 1・−${S.flower.invite}</div></div>`),
    `<div class="sq" data-addbuy="${k}|all"><div class="sqi">👥</div><div class="sqt">邀請（全元素）</div><div class="sqs">3 選 1・−${S.flower.invite}</div></div>`,
    `<div class="sq" data-addbuy="${k}|grand"><div class="sqi">🎭</div><div class="sqt">盛邀</div><div class="sqs">6 選 1・−${S.flower.grand}</div></div>`,
-   ...BN.map(b=>{const l0=r.lvl0[b]||0,full=(r.lvl[b]||0)>=MAX_BLESS;return`<div class="sq ${full?'dis':''}" data-ba="${k}|${esc(b)}"><div class="sqi">${[...b].map(c=>dot(Object.keys(EL).find(x=>EL[x]===c))).join('')}</div><div class="sqt">祝福 ${esc(b)}</div><div class="sqs">Lv${l0}</div></div>`}),
+   ...BN.map(b=>{const l0=r.lvl0[b]||0,full=(sm.rows.at(-1)?.lvl[b]||0)>=MAX_BLESS; // 整個規劃中已升到 4 級就鎖住，任何一幕都不能再選
+    return`<div class="sq ${full?'dis':''}" data-ba="${k}|${esc(b)}" ${full?'title="此祝福在規劃中已達 4 級"':''}><div class="sqi">${[...b].map(c=>dot(Object.keys(EL).find(x=>EL[x]===c))).join('')}</div><div class="sqt">祝福 ${esc(b)}</div><div class="sqs">${full?'🔒 ':''}Lv${l0}</div></div>`}),
    `<div class="sq" data-am="${k}"><div class="sqi">✦</div><div class="sqt">神秘收穫</div></div>`,
    `<div class="sq" data-a40="${k}"><div class="sqi">🌸</div><div class="sqt">40 花神秘收穫</div><div class="sqs">−40</div></div>`];
   h+=`<div class="card ${a.boss?'boss':a.arc?'arc':''} ${p.done?'done':''}"><div class="row"><h3 style="margin:0">${a.label}${a.boss?' ・首領':''}</h3>
@@ -712,7 +713,7 @@ function rPlan(){
  T.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{const[k,d]=b.dataset.mv.split('|');const m=moveArc(k,+d);if(m)return toast(m);rerender()});
  T.querySelectorAll('[data-var]').forEach(s=>s.onchange=()=>{const p=actPlan(s.dataset.var);p.variant=s.value;markEdit(s.dataset.var);rerender()});
  T.querySelectorAll('[data-addbuy]').forEach(b=>b.onclick=()=>{const[k,kind,el]=b.dataset.addbuy.split('|');flowBuy(k,null,kind,el)});
- T.querySelectorAll('[data-ba]').forEach(b=>b.onclick=()=>{if(b.classList.contains('dis'))return toast('此祝福已達 4 級');
+ T.querySelectorAll('[data-ba]').forEach(b=>b.onclick=()=>{if(b.classList.contains('dis'))return toast('此祝福在規劃中已達 4 級');
   const[k,n]=b.dataset.ba.split('|');commitEv(k,null,{t:'bless',n,side:'L'});rerender()});
  T.querySelectorAll('[data-am]').forEach(b=>b.onclick=()=>flowMyst(b.dataset.am));
  T.querySelectorAll('[data-a40]').forEach(b=>b.onclick=()=>flowB40(b.dataset.a40,null,{t:'m40'}));
