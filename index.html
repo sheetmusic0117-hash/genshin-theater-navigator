@@ -583,7 +583,6 @@ function checks(sm){
  const bad=R.filter(n=>!allowed(n));if(bad.length)out.push({lv:'warn',t:'非當期元素且非特邀：'+bad.join('、')});
  sm.rows.filter(r=>r.p.done).forEach(r=>r.err.forEach(e=>out.push({lv:'warn',t:`${r.a.label}：${e}`})));
  const nd=sm.rows.filter(r=>r.p.done).length;out.push({lv:'mut',t:`已完成 ${nd}/${sm.rows.length} 幕（按各幕的「完成」後才檢查該幕）`});
- if(!S.season.elements.length)out.push({lv:'mut',t:'尚未載入當期資料（不影響使用，只是沒有開幕角色、元素限制與元素祝福組合）'});
  return out}
 
 /* ============ 規劃頁 ============ */
@@ -908,7 +907,7 @@ function rPool(){
   ${ops.length?`<div class="avs">${ops.map(o=>{const c=openingCfg(o);return avCell(o,{sel:true,extra:`<div><select data-om="${esc(o)}" ${S.locked?'disabled':''}>
    <option value="trial" ${c.mode==='trial'?'selected':''}>試用</option><option value="own" ${c.mode==='own'?'selected':''}>自帶</option></select></div>`})}).join('')}</div>
    <div class="mut">試用固定 90 級、C0；自帶的等級與命座在下方角色池調整。</div>`
-   :'<p class="mut">尚未載入當期資料，沒有開幕角色（到「當期資料」載入；不載入也能用，參演全部由自選組成）。</p>'}</div>
+   :'<p class="mut">尚未選開幕角色（請到「當期資料」選好 6 名開幕角色）。</p>'}</div>
  <div class="card"><div class="row"><h3 style="margin:0">助演（佔 1 個自選名額）</h3>
   <button id="supb" ${S.locked?'disabled':''}>選擇助演</button>${S.support?`<button id="supx" ${S.locked?'disabled':''}>取消助演</button>`:''}</div>
   ${S.support?`<div class="avs">${avCell(S.support,{sel:true})}</div>`:'<p class="mut">未選</p>'}
@@ -1011,19 +1010,18 @@ function importRoster(j){
 const allChars=()=>[...new Set([...Object.keys(DB),...S.pool.map(c=>c.name)])];
 function elemCheck(e){const main=e.filter(x=>['pyro','hydro','electro','cryo'].includes(x)).length,sub=e.length-main,w=[];
  if(e.length!==3)w.push(`需選 3 種元素（目前 ${e.length}）`);if(main<2)w.push('火水雷冰至少 2 種');if(sub>1)w.push('風岩草至多 1 種');return w}
-// 當期資料可留空；有填就要完整（3 種元素、6 名開幕、特邀 0 或 4 名）
+// 當期資料必填 3 種開放元素與 6 名開幕角色；特邀 0 或 4 名
 function seasonIssues(){const se=S.season,w=[];
- if(se.elements.length)w.push(...elemCheck(se.elements));
- if(se.opening.length&&se.opening.length!==6)w.push(`開幕角色應為 6 名（目前 ${se.opening.length}）`);
- if(se.elements.length&&!se.opening.length)w.push('尚未選開幕角色');
+ w.push(...elemCheck(se.elements));
+ if(se.opening.length!==6)w.push(`開幕角色應為 6 名（目前 ${se.opening.length}）`);
  if(se.guests.length&&se.guests.length!==4)w.push(`特邀角色應為 4 名（目前 ${se.guests.length}）`);return w}
 function rSeason(){const se=S.season,ew=elemCheck(se.elements),L=S.seasonLocked,D=L?'disabled':'',iss=seasonIssues();
  const F=S.flower,inp=(k,l)=>`<label>${l} <input type="number" data-fk="${k}" value="${F[k]}" style="width:64px"></label>`;
  const chips=l=>l.map(n=>`<span class="chip">${avatar(n)}${esc(n)}</span>`).join('')||'<span class="mut">未選</span>';
- $('#tab-season').innerHTML=`<div class="card ${L?'done':''}"><div class="row"><h3 style="margin:0">當期資料（可手動編輯，也可留空）</h3><span style="flex:1"></span>
+ $('#tab-season').innerHTML=`<div class="card ${L?'done':''}"><div class="row"><h3 style="margin:0">當期資料</h3><span style="flex:1"></span>
   ${L?`<span class="ok">✔ 已確定</span><button id="sunlock">解除確定</button>`:`<button class="pri" id="slock" ${iss.length?'disabled':''}>確定當期資料</button>`}</div>
   ${iss.map(w=>`<div class="warn">⚠ ${w}</div>`).join('')}
-  ${L?'<div class="mut">已確定，要修改請先解除確定（會一併解除參演名單的確定）。</div>':'<div class="mut">確定後才能編輯角色池；不填任何資料也可以直接確定。</div>'}
+  ${L?'<div class="mut">已確定，要修改請先解除確定（會一併解除參演名單的確定）。</div>':'<div class="mut">需選好 3 種開放元素與 6 名開幕角色才能確定；確定後才能編輯角色池。</div>'}
   <div class="row" style="margin-top:6px"><label>難度 <select id="smode" ${D}>${Object.entries(MODES).map(([k,m])=>`<option value="${k}" ${(S.mode||'luna')===k?'selected':''}>${m.label}（${m.min}~${m.max} 人${m.arc?'，含圣牌挑戰':'，沒有圣牌挑戰'}）</option>`).join('')}</select></label>
    <label>名稱 <input id="sname" value="${esc(se.name)}" size="28" placeholder="例：2026-10 月諭" ${D}></label></div>
   <h4>開放元素（3 種）</h4><div class="row">${Object.entries(EL).map(([k,v])=>`<button class="elbtn ${se.elements.includes(k)?'on':''}" data-el="${k}" ${D}>${dot(k)} ${v}</button>`).join('')}</div>
