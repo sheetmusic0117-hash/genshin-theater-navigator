@@ -486,6 +486,10 @@ function arcAfter(k){const o=order();for(let i=o.indexOf(k)-1;i>=0;i--)if(o[i][0
 // 實戰中：已有紀錄的圣牌挑戰不能移動，也不能移到已有紀錄的幕之前
 function arcBlock(k,after){const L=S.live;if(!L?.active)return'';if(L.order.includes(k))return'這場圣牌挑戰已有實戰紀錄，不能移動';
  const o=order();return o.indexOf(after)<o.indexOf(L.order.at(-1))?'不能移到已有實戰紀錄的幕之前':''}
+// 圣牌挑戰的位置選項：可放在可出現之後的任一幕後，或另一場圣牌挑戰之後；排不進去的選項停用
+function arcOpts(k){const o=order(),prev=o[o.indexOf(k)-1],min=+ARC_AFTER[k].slice(1);
+ return o.filter(x=>x!==k&&x!=='a10'&&(ACT[x].arc||+x.slice(1)>=min)).map(x=>{const t=S.order.filter(y=>y!==k);t.splice(t.indexOf(x)+1,0,k);
+  const ok=validOrder(t)&&!arcBlock(k,x);return`<option value="${x}" ${x===prev?'selected':ok?'':'disabled'}>${ACT[x].label}後</option>`}).join('')}
 function setArc(k,after){const m=arcBlock(k,after);if(m)return m;order();const o=S.order.filter(x=>x!==k);o.splice(o.indexOf(after)+1,0,k);
  if(!validOrder(o))return k==='c1'?'圣牌挑戰 I 只能排在第 4 幕之後、第 10 幕之前':'圣牌挑戰 II 只能排在第 6 幕之後、第 10 幕之前';S.order=o;return''}
 
@@ -842,7 +846,7 @@ function actCard(r,sm,BN,rec){const a=r.a,k=a.k,p=r.p,RO=ro(k),D=RO?'disabled':'
    `<div class="sq" data-am="${k}"><div class="sqi">✦</div><div class="sqt">神秘收穫</div></div>`,
    `<div class="sq" data-a40="${k}"><div class="sqi">🌸</div><div class="sqt">40 花神秘收穫</div><div class="sqs">−40</div></div>`];
   return`<div class="card ${a.boss?'boss':a.arc?'arc':''} ${rec?'rec '+(rec==='cur'?'cur':'recdone'):p.done?'done':''} ${RO?'ro':''}" data-act="${k}"><div class="row"><h3 style="margin:0">${a.label}${a.boss?' ・首領':''}${rec?'・紀錄表':''}</h3>
-   ${a.arc&&!rec?`<select data-arc="${k}" ${RO||S.live?.active&&S.live.order.includes(k)?'disabled':''}>${[...Array(10).keys()].slice(+ARC_AFTER[k].slice(1)).map(n=>`<option value="a${n}" ${arcAfter(k)==='a'+n?'selected':arcBlock(k,'a'+n)?'disabled':''}>${ACT['a'+n].label}後</option>`).join('')}</select>`:''}
+   ${a.arc&&!rec?`<select data-arc="${k}" ${RO||S.live?.active&&S.live.order.includes(k)?'disabled':''}>${arcOpts(k)}</select>`:''}
    ${normal?`<select data-var="${k}" ${D}>${['a','b','c'].map(v=>`<option value="${v}" ${(p.variant||'a')===v?'selected':''}>${actVariants(inf)[v]?esc(actVariants(inf)[v]):'敵人 '+v.toUpperCase()}${v==='c'?'（精英 +'+S.flower.elite+'）':''}</option>`).join('')}</select>`:''}
    <span style="flex:1"></span>${rec?(rec==='cur'?'<span class="ok">進行中</span>':'<span class="mut">✓ 已完成</span>'):`<button class="sm" data-reset="${k}">重置</button>${p.done?`<button class="sm donebtn on" data-done="${k}">✓ 已完成</button>`:`<button class="sm pri" data-done="${k}">完成</button>`}`}</div>
   ${!normal&&inf.name?`<div><b>${esc(inf.name)}</b></div>`:''}
