@@ -467,8 +467,8 @@ function openMenu(title,items,onPick,note=''){
  showModal()}
 
 /* ============ 幕順序（圣牌挑戰可移動） ============ */
-// 圣牌 I 於第 4 幕後出現、圣牌 II 於第 6 幕後出現，都必須在第 10 幕前完成
-const ARC_AFTER={c1:'a4',c2:'a6'};
+// 圣牌 I 於第 3 幕後出現、圣牌 II 於第 6 幕後出現，都必須在第 10 幕前完成
+const ARC_AFTER={c1:'a3',c2:'a6'};
 const DEFAULT_ORDER=ACTS.map(a=>a.k);
 function validOrder(o){if(!Array.isArray(o)||o.length!==DEFAULT_ORDER.length||DEFAULT_ORDER.some(k=>!o.includes(k)))return false;
  const ix=k=>o.indexOf(k),main=o.filter(k=>k[0]==='a');
@@ -486,7 +486,7 @@ function arcOpts(k){const o=order(),prev=o[o.indexOf(k)-1],min=+ARC_AFTER[k].sli
  return o.filter(x=>x!==k&&x!=='a10'&&(ACT[x].arc||+x.slice(1)>=min)).map(x=>{const t=S.order.filter(y=>y!==k);t.splice(t.indexOf(x)+1,0,k);
   const ok=validOrder(t)&&!arcBlock(k,x);return`<option value="${x}" ${x===prev?'selected':ok?'':'disabled'}>${ACT[x].label}後</option>`}).join('')}
 function setArc(k,after){const m=arcBlock(k,after);if(m)return m;order();const o=S.order.filter(x=>x!==k);o.splice(o.indexOf(after)+1,0,k);
- if(!validOrder(o))return k==='c1'?'圣牌挑戰 I 只能排在第 4 幕之後、第 10 幕之前':'圣牌挑戰 II 只能排在第 6 幕之後、第 10 幕之前';S.order=o;return''}
+ if(!validOrder(o))return k==='c1'?'圣牌挑戰 I 只能排在第 3 幕之後、第 10 幕之前':'圣牌挑戰 II 只能排在第 6 幕之後、第 10 幕之前';S.order=o;return''}
 
 /* ============ 神秘收穫 ============ */
 // A：每種只能選一次；excl＝互斥（選了一個另一個不再出現）；kind＝要手動指定的角色類型
@@ -501,8 +501,9 @@ const MYST={
  A9:{name:'邀請角色 +10 花、祝福 −10 花（永久）',excl:'A10'},
  A10:{name:'邀請角色 −10 花、祝福 +10 花（永久）',excl:'A9'},
  A11:{name:'珍貴收穫：花 15 抽一次 40 花神秘收穫',cost:15,sub:1},
- A12:{name:'恢復 1 名已選角色 1 點體力',kind:'selected'},
- A13:{name:'盛邀消耗 −20 花（永久）'}};
+ A12:{name:'恢復 1 名已選角色 1 點體力',kind:'selected',excl:'A14'},
+ A13:{name:'盛邀消耗 −20 花（永久）'},
+ A14:{name:'將 1 名體力耗盡角色洗回待命',kind:'exhausted',excl:'A12'}};
 // B：40 花神秘收穫的內容（可重複）
 const MYST40={
  B1:{name:'67% 獲得 90 花',opt:['成功','失敗']},
@@ -513,7 +514,8 @@ const MYST40={
  B6:{name:'整體祝福等級 +1'},
  B7:{name:'之後每幕結算 +15 花'},
  B8:{name:'戰後選人可以重擲一次',live:1},
- B9:{name:'花為 0 時獲得 80 花（僅生效一次）'}};
+ B9:{name:'花為 0 時獲得 80 花（僅生效一次）'},
+ B10:{name:'將隨機體力未滿角色體力回滿',kind:'notfull'}};
 
 // 邀請種類
 const INV={el:{label:'邀請（指定元素）',n:3},all:{label:'邀請（全元素）',n:3},grand:{label:'盛邀',n:6}};
@@ -554,6 +556,7 @@ function sim(ord0){ // ord0：要模擬的幕（預設＝規劃順序；實戰�
   const applyB=(e,why)=>{const b=MYST40[e.b];let g=0;if(!b){err.push(`${why}：未選內容`);return 0}
    if(e.b==='B1')g=e.o==='失敗'?0:90;
    if(e.b==='B2')g=+(e.o||20);
+   if(e.b==='B10'){if(!e.n)err.push(`${why}：尚未指定角色`);else if(st[e.n]==null)err.push(`${why}：「${e.n}」尚未選入`);else if(st[e.n]>=STAMINA)err.push(`${why}：「${e.n}」體力是滿的`);else st[e.n]=STAMINA}
    if(e.b==='B3'){if(!e.n)err.push(`${why}：尚未指定角色`);else if(st[e.n]==null)err.push(`${why}：「${e.n}」尚未選入`);else st[e.n]=Math.min(STAMINA,st[e.n]+(+e.o||1))}
    if(e.b==='B4')(e.ns||[]).filter(Boolean).forEach(n=>{if(st[n]!==0)err.push(`${why}：「${n}」體力未耗盡`);else st[n]=null});
    if(e.b==='B6')blv++;
@@ -576,7 +579,8 @@ function sim(ord0){ // ord0：要模擬的幕（預設＝規劃順序；實戰�
     if(e.id==='A10'){invD-=10;blD+=10}
     if(e.id==='A13')grD-=20;
     if(e.id==='A11')g=applyB(e,why);
-    if(e.id==='A12'){if(!e.n)err.push(`${why}：尚未指定角色`);else if(st[e.n]==null)err.push(`${why}：「${e.n}」尚未選入`);else st[e.n]=Math.min(STAMINA,st[e.n]+1)}}
+    if(e.id==='A12'){if(!e.n)err.push(`${why}：尚未指定角色`);else if(st[e.n]==null)err.push(`${why}：「${e.n}」尚未選入`);else st[e.n]=Math.min(STAMINA,st[e.n]+1)}
+    if(e.id==='A14'){if(!e.n)err.push(`${why}：尚未指定角色`);else if(st[e.n]!==0)err.push(`${why}：「${e.n}」體力未耗盡`);else st[e.n]=null}}
    const short=c>0&&bal0-c<0; // 花費在收入之前結算，付款當下不得為負
    if(short)err.push(`幻劇之花不足以支付：持有 ${bal0}，需要 ${c}（收入要付款後才拿到）`);
    bal=bal0-c+g;let rz=false;if(rsv===1&&bal===0){bal=80;g+=80;rsv=2;rz=true} // 花歸零時觸發一次
@@ -590,7 +594,9 @@ function sim(ord0){ // ord0：要模擬的幕（預設＝規劃順序；實戰�
    // 排除體力要留給之後固定格的人（扣掉之後的固定出戰次數後沒有剩）
    const spare=x=>st[x]-(remFix[x]||0);
    const fits=Object.keys(st).filter(x=>st[x]>0&&!usedNow.has(x)&&(isVirt(x)?virtFits(x,t):t==='@any'||elOf(x)===t.slice(4)));
-   const cands=fits.filter(x=>spare(x)>0).sort((x,y)=>spare(y)-spare(x)||isVirt(y)-isVirt(x));
+   // 元素格優先用「確定是該元素」的人（真實角色、或已經收窄到該元素的任意選入），不夠才再收窄另一筆任意選入
+   const sure=x=>t==='@any'||!isVirt(x)||VIRT[x].bound===t.slice(4)||VIRT[x].el===t.slice(4);
+   const cands=fits.filter(x=>spare(x)>0).sort((x,y)=>sure(y)-sure(x)||spare(y)-spare(x)||isVirt(y)-isVirt(x));
    if(!cands.length){err.push(fits.length?`沒有人能填「${condText(t)}」（${fits.map(label).join('、')} 的體力要留給後面的固定格）`:`沒有人能填「${condText(t)}」`);assign[si]={who:null,cands,reserved:fits};return}
    const who=cands[0];
    // 用條件選入的人填元素格：把他的候選池收窄到該元素（之後也受這個限制）
@@ -662,8 +668,8 @@ function evRow(k,ln,gen){const e=ln.e,j=ln.j,g=gen?.find(x=>x.kind==='ev'&&x.j==
   <b>${ln.c?'− '+ln.c:''}${ln.c&&ln.g?' / ':''}${ln.g?'+ '+ln.g:''}${!ln.c&&!ln.g?'0':''}</b><x data-ex="${k}|${j}" title="移除">×</x></div>`}
 
 /* --- 事件選擇流程（正方形選項 → 彈窗進一步選擇） --- */
-const KIND_TITLE={standby:'選擇待命角色',guest:'選擇未選的特邀角色',selected:'選擇已選入角色',exhausted:'選擇體力耗盡角色'};
-const KIND_FLT={standby:c=>n=>c[n]===null,guest:c=>n=>c[n]===null&&S.season.guests.includes(n),selected:c=>n=>c[n]!=null,exhausted:c=>n=>c[n]===0};
+const KIND_TITLE={standby:'選擇待命角色',guest:'選擇未選的特邀角色',selected:'選擇已選入角色',exhausted:'選擇體力耗盡角色',notfull:'選擇體力未滿的角色（實際是隨機）'};
+const KIND_FLT={standby:c=>n=>c[n]===null,guest:c=>n=>c[n]===null&&S.season.guests.includes(n),selected:c=>n=>c[n]!=null,exhausted:c=>n=>c[n]===0,notfull:c=>n=>c[n]!=null&&c[n]<STAMINA};
 function evCtx(k,j){const r=simFor(k).rows.find(x=>x.a.k===k);return j==null?r.entry:r.lines.find(x=>x.j===j).ctx}
 function commitEv(k,j,e){const ev=actPlan(k).ev;j==null?ev.push(e):ev[j]=e;markEdit(k);save()}
 function chooseChar(kind,ctx,cb,title,extra={}){const f=KIND_FLT[kind](ctx),list=Object.keys(ctx).filter(f).filter(n=>!isVirt(n)).filter(extra.filter||(()=>true));
@@ -800,7 +806,7 @@ function spotlight(el){spotEnd?.();const ov=document.createElement('div');ov.id=
  spotEnd=()=>{ov.remove();el.classList.remove('hlblue');removeEventListener('scroll',place);removeEventListener('resize',place);removeEventListener('keydown',key,true);spotEnd=null};
  place();addEventListener('scroll',place,{passive:true});addEventListener('resize',place);addEventListener('keydown',key,true);ov.addEventListener('mousedown',end)}
 function charTimeline(sm,n){useSim(sm);const isB=(e,b)=>(e.t==='m40'||e.id==='A11')&&e.b===b,lab=k=>ACT[k].label;
- const join=[],fight=[],maybe=[],other=[];
+ const join=[],fight=[],fightMaybe=[],maybe=[],other=[];
  if(isOpening(n))join.push({k:null,t:'開幕角色，第 1 幕起就能出戰'});
  // 每筆「任意」選入對應的虛擬角色（用來找它被排去哪幾場出戰）
  const virtOf=g=>Object.keys(VIRT).find(v=>{const f=VIRT[v].ref||{};return f.k===g.k&&f.kind===g.kind&&(g.kind==='pick'||f.j===g.j)});
@@ -817,17 +823,22 @@ function charTimeline(sm,n){useSim(sm);const isB=(e,b)=>(e.t==='m40'||e.id==='A1
   p.ev.forEach((e,j)=>{const x={k,w:'ev',i:j};if(e.n===n&&!e.from){
     if(e.t==='buy')join.push({...x,t:INV[e.kind||'all'].label});
     if(e.t==='myst'&&['A2','A3','A4'].includes(e.id))join.push({...x,t:esc(MYST[e.id].name)});
+    if(e.t==='myst'&&e.id==='A14')other.push({...x,t:'體力耗盡後洗回待命'});
     if(e.t==='myst'&&e.id==='A12')other.push({...x,t:'回復體力 +1'});
     if(e.t==='myst'&&e.id==='A8')other.push({...x,t:'標記出戰（參與下一場戰鬥 +20 花）'});
-    if(isB(e,'B3'))other.push({...x,t:`回復體力 +${e.o||1}`})}
+    if(isB(e,'B3'))other.push({...x,t:`回復體力 +${e.o||1}`});
+    if(isB(e,'B10'))other.push({...x,t:'體力回滿'})}
    if(isB(e,'B4')&&(e.ns||[]).includes(n))other.push({...x,t:'體力耗盡後洗回待命'})});
   p.fight.forEach((t,si)=>{if(t===n)fight.push({k,w:'fs',i:si,t:`固定出戰（進場體力 ${r.entry[n]??'—'}）`})});
-  r.assign.forEach((x,si)=>{if(x?.who===n)fight.push({k,w:'fs',i:si,t:`條件格「${condText(p.fight[si])}」排到他`})})});
+  // 條件格：只有他能填才算確定；他是可用人選之一（不論目前排給誰）就列為可能
+  r.assign.forEach((x,si)=>{if(!x?.cands?.includes(n))return;const t=condText(p.fight[si]);
+   if(x.cands.length===1)fight.push({k,w:'fs',i:si,t:`條件格「${t}」只有他能填`});
+   else fightMaybe.push({k,w:'fs',i:si,t:`條件格「${t}」可能由他填（可用 ${x.cands.length} 人）`})})});
  const go=x=>x.k?`data-goto="${x.k}|${x.w||''}|${x.i??''}"`:'';
  const li=x=>`<div class="fitem"><div ${go(x)}>${x.k?`<b>${lab(x.k)}</b> `:''}${x.t}</div>${(x.subs||[]).map(s=>`<div class="mut fsub" ${go(s)}>→ ${s.t}</div>`).join('')}${x.f?`<div class="mut">→ ${x.f}</div>`:''}</div>`;
  const part=(h,a,empty)=>`<h4>${h}</h4>${a.map(li).join('')||`<div class="mut">${empty}</div>`}`;
  $('#mbox').innerHTML=`<div class="tlbox"><div class="row">${avatar(n)}<h3 style="margin:0">${esc(label(n))}</h3><span style="flex:1"></span><button id="mcancel">關閉</button></div>
-  ${part('確定入場的時機',join,'規劃中沒有確定選入他')}${part('確定出戰的時機',fight,'規劃中沒有確定排他出戰')}
+  ${part('確定入場的時機',join,'規劃中沒有確定選入他')}${part('確定出戰的時機',fight,'規劃中沒有確定排他出戰')}${fightMaybe.length?part('可能出戰的時機',fightMaybe,''):''}
   ${maybe.length?part('可能的情況（依每次可能被選入的時機）',maybe,''):''}${other.length?part('其他事件',other,''):''}</div>`;
  $('#mbox').querySelectorAll('[data-goto]').forEach(d=>d.onclick=ev=>{ev.stopPropagation();const[k,w,i]=d.dataset.goto.split('|');gotoSpot(k,w,i)});
  $('#mcancel').onclick=closeModal;$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
